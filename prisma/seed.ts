@@ -59,14 +59,85 @@ async function main() {
     });
   }
 
-  await prisma.user.upsert({
+  const customer = await prisma.user.upsert({
     where: { email: "customer@demo.test" },
     update: {},
     create: { email: "customer@demo.test", name: "Maya", role: "CUSTOMER", passwordHash },
   });
 
+  // Approved driver (mirrors the restaurant-approval pattern).
+  const driverUser = await prisma.user.upsert({
+    where: { email: "driver@demo.test" },
+    update: {},
+    create: { email: "driver@demo.test", name: "Dev", role: "DRIVER", passwordHash },
+  });
+  await prisma.driver.upsert({
+    where: { userId: driverUser.id },
+    update: {},
+    create: {
+      userId: driverUser.id,
+      name: "Dev",
+      phone: "+91 90000 00000",
+      status: "APPROVED",
+    },
+  });
+
+  // Two PAID orders so flows are exercisable without running checkout:
+  //  - one PLACED  -> the restaurant queue's "New" column / restaurant E2E
+  //  - one READY (driverId=null) -> the driver pickup pool (Phase 3)
+  // Idempotent: only seed orders if there are none yet.
+  const DELIVERY_FEE_CENTS = 299;
+  const orderCount = await prisma.order.count();
+  if (orderCount === 0) {
+    const placedSubtotal = 900 * 2;
+    const placed = await prisma.order.create({
+      data: {
+        customerId: customer.id,
+        restaurantId: restaurant.id,
+        status: "PLACED",
+        subtotalCents: placedSubtotal,
+        deliveryFeeCents: DELIVERY_FEE_CENTS,
+        totalCents: placedSubtotal + DELIVERY_FEE_CENTS,
+        addressLine: "12 MG Road, Bengaluru",
+        items: {
+          create: [{ name: "Margherita", priceCents: 900, quantity: 2 }],
+        },
+        payment: { create: { status: "PAID" } },
+        events: { create: [{ from: null, to: "PLACED", byUserId: customer.id }] },
+      },
+    });
+
+    const readySubtotal = 1100;
+    const ready = await prisma.order.create({
+      data: {
+        customerId: customer.id,
+        restaurantId: restaurant.id,
+        status: "READY",
+        subtotalCents: readySubtotal,
+        deliveryFeeCents: DELIVERY_FEE_CENTS,
+        totalCents: readySubtotal + DELIVERY_FEE_CENTS,
+        addressLine: "8 Brigade Road, Bengaluru",
+        driverId: null,
+        items: {
+          create: [{ name: "Pepperoni", priceCents: 1100, quantity: 1 }],
+        },
+        payment: { create: { status: "PAID" } },
+        events: {
+          create: [
+            { from: null, to: "PLACED", byUserId: customer.id },
+            { from: "PLACED", to: "ACCEPTED", byUserId: owner.id },
+            { from: "ACCEPTED", to: "PREPARING", byUserId: owner.id },
+            { from: "PREPARING", to: "READY", byUserId: owner.id },
+          ],
+        },
+      },
+    });
+
+    console.log(`Seeded orders: PLACED ${placed.id}, READY ${ready.id}`);
+  }
+
   console.log(
-    `Seeded admin@demo.test, owner@demo.test, customer@demo.test (password: ${SEED_PASSWORD})`,
+    `Seeded admin@demo.test, owner@demo.test, customer@demo.test, driver@demo.test (password: ${SEED_PASSWORD})`,
   );
 }
 
