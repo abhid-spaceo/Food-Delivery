@@ -48,7 +48,8 @@ The earlier slice already integrated these. Build phases extend them; they are n
 1. **Tests: test-as-you-go** ✓ confirmed. Each phase exits only when its core logic has Vitest unit tests + a Playwright happy-path E2E (matches your global rules and the repo's existing pattern).
 2. **All four design extras are in scope** ✓ confirmed, built in Phase 5 and tagged `[design-extra]`: multi-address book, restaurant open/closed toggle, per-order prep-time selector, driver online/offline toggle.
 3. **Admin overrides: reassign + force-cancel** ✓ confirmed (design A5), built in Phase 5 (adds admin-only state-machine edges).
-4. Assumed (not in question scope): single currency/region; admin seeded; driver self-signup allowed (design D1); demo data volumes small.
+4. **Visual polish: style as we go + retrofit** ✓ confirmed. The foundation was built functional-first (plain shadcn/Tailwind defaults). To meet the PRD "production-grade UI" goal: establish a shared design system that matches the hi-fi mockups (`docs/food-delivery/design/*.html`), **retrofit the existing auth/restaurant/admin screens** (Phase 1.5), and build every later phase's screens **to match the mockups from the start**. No dedicated "restyle everything at the end" — polish is continuous.
+5. Assumed (not in question scope): single currency/region; admin seeded; driver self-signup allowed (design D1); demo data volumes small.
 
 ---
 
@@ -71,6 +72,27 @@ The earlier slice already integrated these. Build phases extend them; they are n
 - **Entry criteria:** Phase 0 baseline green (`pnpm test`, `pnpm lint`, `pnpm build`).
 - **Exit / acceptance:** migration applies + client regenerates; `state.test.ts` updated (legal `PREPARING→READY`, `READY→OUT_FOR_DELIVERY`; `PREPARING→OUT_FOR_DELIVERY` now illegal) **plus new actor-rejection tests** (restaurant blocked from delivery leg; driver blocked from kitchen leg; admin allowed on all legal edges); `e2e/restaurant.spec.ts` rewritten to stop at READY ("no further actions") and passes **against the seeded PAID PLACED order**; `pnpm build`/`pnpm lint` clean; seed produces both a PAID PLACED order (for the restaurant E2E) and a claimable PAID READY order (for the driver pool).
 - **Risks:** Postgres enum-in-transaction caveat (mitigation: split migration); forgetting an exhaustive `Record<enum>` map (TS will flag); driver signup must create the `Driver` row (coupled change).
+
+---
+
+## Phase 1.5 — Design system foundation + visual retrofit
+
+**Goal / milestone:** A shared visual design system matching the hi-fi mockups, applied to the existing screens — so the app *looks* production-grade and every later phase inherits the look instead of bolting it on. (Per Decision #4 — "style as we go + retrofit.")
+
+- **Depends on:** Phase 1. **Size:** M.
+- **In scope:**
+  - **Design tokens + theme** in `app/globals.css` (Tailwind v4 `@theme`): brand color (coral `#FF3B5C` per the mockups), ink/muted text, surface/line colors, radius, shadow, font — derived from `docs/food-delivery/design/index.html`'s palette. One source of truth for color/spacing.
+  - **Shared shells** styled to the mockups: dashboard shell (sidebar + topbar) used by admin/restaurant; the admin console's denser, polished look (KPI cards with trend, refined tables) per `admin-design.html`; the customer top-nav shell per `customer-design.html`.
+  - **Polish shared primitives**: `components/ui/*` (button, card, table, badge), `_components/{stat-card,status-badge,badge,table}` — spacing, weight, color, hover states to match mockups.
+  - **Retrofit existing screens** to the system: auth (signin/signup), restaurant (queue/menu/order detail/profile), admin (overview/restaurants/users/orders). No behavior change — visual only.
+- **Out of scope now:** new features (those are Phases 2–5); pixel-perfect parity (aim for "clearly the same design language," not 1:1).
+- **Key files:** `app/globals.css`, `components/ui/*`, `app/(restaurant)/_components/dashboard-shell.tsx`, `app/(admin)/_components/*`, the existing role pages (visual props/classes only).
+- **Entry criteria:** Phase 1 complete.
+- **Exit / acceptance:** existing screens visibly match the mockups' design language (color, sidebar, cards, tables); `pnpm build`/`lint` clean; no E2E/unit regressions (selectors that tests rely on — e.g. status label text, button names — are preserved). A quick browser pass on each retrofitted screen.
+- **Risks:** changing markup can break Playwright selectors (mitigation: keep accessible names/text the tests query — "Accept", "Mark ready", status labels, "Open"); scope creep into feature work (hold the line — visual only).
+- **Tests:** re-run full gate (`pnpm test && pnpm build && pnpm test:e2e`) to confirm the retrofit didn't regress behavior; visual check in the browser.
+
+> From here on, **every phase's new screens are built styled-to-mockup** using this system — there is no separate "polish later" step.
 
 ---
 
@@ -178,6 +200,7 @@ The earlier slice already integrated these. Build phases extend them; they are n
 - **Money = integer cents** everywhere; never floats. Consolidate the three `formatCents` copies into `lib/money.ts` when the customer area becomes the third consumer.
 - **SWR polling** pattern reused from `app/(restaurant)/_components/queue-board.tsx` (fetcher checks `ok`, `fallbackData`, `refreshInterval`, stop at `isTerminal`).
 - **Per-area structure:** `app/(role)/_lib/*` + `_components/*` + per-route `actions.ts`, mirroring `(restaurant)`.
+- **Build-to-mockup (Decision #4):** all new screens use the Phase 1.5 design system and match `docs/food-delivery/design/*.html` (color, shell, cards, tables) — styling is part of each phase's definition of done, not deferred. Preserve the accessible text/names E2E tests query.
 
 ## Verification (how to prove each phase end-to-end)
 
