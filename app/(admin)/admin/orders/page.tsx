@@ -6,6 +6,8 @@ import { Badge } from "@/app/(admin)/_components/badge";
 import { FilterBar } from "@/app/(admin)/_components/filter-bar";
 import { formatCents } from "@/app/(admin)/_components/money";
 import { Table, THead, TBody, TR, TH, TD } from "@/app/(admin)/_components/table";
+import { Button } from "@/components/ui/button";
+import { adminMarkPaid } from "./actions";
 
 // Admin Orders ("/admin/orders", S17). All orders with an optional ?status=
 // filter. ?id= opens a read-only detail panel above the table.
@@ -125,6 +127,7 @@ export default async function AdminOrdersPage({
     include: {
       restaurant: { select: { name: true } },
       customer: { select: { name: true, email: true } },
+      payment: { select: { status: true } },
     },
   });
 
@@ -155,6 +158,7 @@ export default async function AdminOrdersPage({
               <TH>Restaurant</TH>
               <TH>Customer</TH>
               <TH>Status</TH>
+              <TH>Payment</TH>
               <TH className="text-right">Total</TH>
               <TH className="text-right">Actions</TH>
             </TR>
@@ -168,14 +172,31 @@ export default async function AdminOrdersPage({
                 <TD>
                   <Badge value={order.status} />
                 </TD>
+                <TD>
+                  {order.payment ? (
+                    <Badge value={order.payment.status} />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TD>
                 <TD className="text-right tabular-nums">{formatCents(order.totalCents)}</TD>
                 <TD className="text-right">
-                  <Link
-                    href={`/admin/orders?id=${order.id}${detailQuery}`}
-                    className="text-primary hover:underline"
-                  >
-                    View
-                  </Link>
+                  <div className="flex items-center justify-end gap-2">
+                    {(order.payment?.status ?? "PENDING") === "PENDING" && (
+                      <form action={adminMarkPaid}>
+                        <input type="hidden" name="id" value={order.id} />
+                        <Button type="submit" size="sm" variant="outline">
+                          Mark paid
+                        </Button>
+                      </form>
+                    )}
+                    <Link
+                      href={`/admin/orders?id=${order.id}${detailQuery}`}
+                      className="text-primary hover:underline"
+                    >
+                      View
+                    </Link>
+                  </div>
                 </TD>
               </TR>
             ))}
