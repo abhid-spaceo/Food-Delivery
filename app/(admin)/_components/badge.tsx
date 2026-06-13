@@ -1,39 +1,40 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Badge as UiBadge } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
+import type { badgeVariants } from "@/components/ui/badge";
 
-// Small status pill for restaurant/order/payment statuses. Color is keyed off
-// the status string so the same component serves every admin table.
-const TONE: Record<string, string> = {
-  // Restaurant statuses
-  PENDING: "bg-amber-100 text-amber-800",
-  APPROVED: "bg-green-100 text-green-800",
-  SUSPENDED: "bg-red-100 text-red-800",
+// Admin-local Badge. Re-implemented as a thin wrapper over the shared ui/badge.
+// Public API is unchanged — { value, className } — so every admin table
+// import keeps working without modification.
+type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>;
+
+const TONE: Record<string, BadgeVariant> = {
+  // Restaurant / driver approval statuses
+  PENDING: "warning",
+  APPROVED: "success",
+  SUSPENDED: "gray",
   // Order statuses
-  PLACED: "bg-blue-100 text-blue-800",
-  ACCEPTED: "bg-indigo-100 text-indigo-800",
-  PREPARING: "bg-amber-100 text-amber-800",
-  READY: "bg-teal-100 text-teal-800",
-  OUT_FOR_DELIVERY: "bg-purple-100 text-purple-800",
-  DELIVERED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-  CANCELLED: "bg-gray-200 text-gray-700",
-  // Roles (reused as plain pills)
-  CUSTOMER: "bg-gray-100 text-gray-700",
-  RESTAURANT: "bg-sky-100 text-sky-800",
-  DRIVER: "bg-teal-100 text-teal-800",
-  ADMIN: "bg-fuchsia-100 text-fuchsia-800",
+  PLACED: "info",
+  ACCEPTED: "warning",
+  PREPARING: "warning",
+  READY: "success",
+  OUT_FOR_DELIVERY: "brand",
+  DELIVERED: "success",
+  REJECTED: "gray",
+  CANCELLED: "gray",
+  // Roles
+  CUSTOMER: "gray",
+  RESTAURANT: "info",
+  DRIVER: "success",
+  ADMIN: "brand",
 };
 
 export function Badge({ value, className }: { value: string; className?: string }) {
+  const variant = TONE[value] ?? "gray";
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        TONE[value] ?? "bg-gray-100 text-gray-700",
-        className,
-      )}
-    >
+    <UiBadge variant={variant} className={cn(className)}>
       {value}
-    </span>
+    </UiBadge>
   );
 }
