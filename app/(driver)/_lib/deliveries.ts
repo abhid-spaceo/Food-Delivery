@@ -44,3 +44,39 @@ export async function getMyDeliveries(driverId: string) {
     past: orders.filter((o) => o.status === "DELIVERED"),
   };
 }
+
+// --- Pickup pool ---
+
+export type PoolOrder = {
+  id: string;
+  restaurantName: string;
+  itemCount: number;
+  totalCents: number;
+  deliveryFeeCents: number;
+  createdAt: string;
+};
+
+/** The shared pickup pool: PAID, unclaimed, READY orders. Visible to every
+ *  APPROVED driver; the first to claim wins (atomic claim in the action). */
+export async function getPool(): Promise<PoolOrder[]> {
+  const orders = await prisma.order.findMany({
+    where: { status: "READY", driverId: null, payment: { status: "PAID" } },
+    orderBy: { createdAt: "asc" }, // oldest first (fairer pickup order)
+    select: {
+      id: true,
+      totalCents: true,
+      deliveryFeeCents: true,
+      createdAt: true,
+      restaurant: { select: { name: true } },
+      items: { select: { quantity: true } },
+    },
+  });
+  return orders.map((o) => ({
+    id: o.id,
+    restaurantName: o.restaurant.name,
+    itemCount: o.items.reduce((sum, it) => sum + it.quantity, 0),
+    totalCents: o.totalCents,
+    deliveryFeeCents: o.deliveryFeeCents,
+    createdAt: o.createdAt.toISOString(),
+  }));
+}
