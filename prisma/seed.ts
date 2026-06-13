@@ -82,6 +82,18 @@ async function main() {
     },
   });
 
+  // Second approved driver — for the atomic-claim "already claimed" E2E.
+  const driverUser2 = await prisma.user.upsert({
+    where: { email: "driver2@demo.test" },
+    update: {},
+    create: { email: "driver2@demo.test", name: "Dani", role: "DRIVER", passwordHash },
+  });
+  await prisma.driver.upsert({
+    where: { userId: driverUser2.id },
+    update: {},
+    create: { userId: driverUser2.id, name: "Dani", phone: "+91 90000 00001", status: "APPROVED" },
+  });
+
   const DELIVERY_FEE_CENTS = 299;
 
   // --- Second restaurant (Spice Hub) + owner ---
@@ -120,11 +132,14 @@ async function main() {
     }});
   }
 
-  // Ensure a PAID, unclaimed READY order exists (feeds the Phase 3 driver pool).
+  // Ensure at least 2 PAID, unclaimed READY orders (Phase 3 driver pool).
+  // Two are needed so the happy-path test and the already-claimed test each
+  // have their own order to consume without contending. Idempotent: only
+  // creates as many as are missing (re-running never exceeds 2 / no dup-keys).
   const readyCount = await prisma.order.count({
     where: { status: "READY", driverId: null },
   });
-  if (readyCount === 0) {
+  for (let i = readyCount; i < 2; i++) {
     const readySubtotal = 1100;
     await prisma.order.create({
       data: {
@@ -184,7 +199,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded admin@demo.test, owner@demo.test, owner2@demo.test, customer@demo.test, driver@demo.test (password: ${SEED_PASSWORD})`,
+    `Seeded admin@demo.test, owner@demo.test, owner2@demo.test, customer@demo.test, driver@demo.test, driver2@demo.test (password: ${SEED_PASSWORD})`,
   );
 }
 
