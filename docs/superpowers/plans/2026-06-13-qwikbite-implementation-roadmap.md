@@ -202,6 +202,19 @@ The earlier slice already integrated these. Build phases extend them; they are n
 - **Per-area structure:** `app/(role)/_lib/*` + `_components/*` + per-route `actions.ts`, mirroring `(restaurant)`.
 - **Build-to-mockup (Decision #4):** all new screens use the Phase 1.5 design system and match `docs/food-delivery/design/*.html` (color, shell, cards, tables) — styling is part of each phase's definition of done, not deferred. Preserve the accessible text/names E2E tests query.
 
+## Testing strategy (per-phase, layered — no big-bang QA at the end)
+
+Goal: every phase is **fully tested before the next begins**, with cross-phase regression caught automatically. Timing differs by test type:
+
+- **Scenarios up front:** each phase's plan includes a **test matrix** — positive, negative, and edge cases tied to that phase's acceptance criteria — written *before* implementation (the "what to verify"), so we build toward known targets.
+- **Unit tests test-first (TDD):** pure logic (state machine + actors, money/cart math, atomic claim) — write the failing test, then implement (as in Phase 1 Task 2). Push **exhaustive** positive/negative/edge coverage *here* — it's fast and cheap.
+- **Playwright E2E after the phase's UI exists, within the phase:** encode the matrix's **critical journeys + high-value negatives** (role isolation, payment-gates-queue, atomic-claim race). Reserve E2E for journeys, not every permutation (test-pyramid — keeps it fast, non-flaky).
+- **Organize E2E by flow, not by phase:** `e2e/{customer-order,restaurant-fulfillment,driver-claim,admin,role-isolation}.spec.ts`. The suite only grows; phases add or update specs.
+- **Phase gate = run the FULL accumulated suite:** `pnpm test:all` (unit + build + all E2E). A later-phase change that breaks an earlier flow turns the existing spec **red immediately** — this is the cross-phase regression net. A phase is "done" only when `test:all` is green.
+- **Critical-path smoke (from Phase 3 on):** one E2E that walks customer → restaurant → driver → admin end-to-end; re-run every later phase as the fastest breakage canary.
+- **Determinism:** seed-based fixtures that self-restore (the Phase 1 seed pattern); no fixed sleeps — wait on text/elements. E2E that mutate state must reseed or provision their own data so the suite stays re-runnable.
+- **Coverage:** keep the 80% unit target; E2E covers critical flows + key negatives.
+
 ## Verification (how to prove each phase end-to-end)
 
 - **Per phase:** `pnpm lint && pnpm build && pnpm test` (Vitest) green; `pnpm test:e2e` for that phase's spec green; `pnpm prisma migrate dev` applies cleanly; `pnpm db:seed` idempotent.
