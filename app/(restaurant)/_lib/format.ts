@@ -13,6 +13,7 @@ export function statusLabel(status: OrderStatus): string {
     PLACED: "Placed",
     ACCEPTED: "Accepted",
     PREPARING: "Preparing",
+    READY: "Ready",
     OUT_FOR_DELIVERY: "Out for delivery",
     DELIVERED: "Delivered",
     REJECTED: "Rejected",
@@ -27,8 +28,9 @@ export function actionLabel(to: OrderStatus): string {
     ACCEPTED: "Accept",
     REJECTED: "Reject",
     PREPARING: "Start preparing",
-    OUT_FOR_DELIVERY: "Out for delivery",
-    DELIVERED: "Mark delivered",
+    READY: "Mark ready",
+    OUT_FOR_DELIVERY: "Out for delivery", // kept for the (Phase 3) driver UI
+    DELIVERED: "Mark delivered", // kept for the (Phase 3) driver UI
   };
   return map[to] ?? statusLabel(to);
 }

@@ -9,9 +9,10 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 // Advance one order to `to`. SECOND authz layer + state machine in one place:
 //   1. resolve the caller's OWN restaurant (requireOwnedRestaurant)
 //   2. load the order and confirm it belongs to that restaurant
-//   3. assertTransition(from, to) — illegal jumps are impossible
+//   3. assertTransition(from, to, "RESTAURANT") — illegal jumps AND actor
+//      violations (a restaurant attempting the driver-only delivery leg) throw
 //   4. update status AND append an OrderStatusEvent (byUserId) in one tx
-// All buttons on the detail page call this with a fixed, server-side `to`.
+// The restaurant drives an order only as far as READY; a driver then claims it.
 async function advanceOrder(orderId: string, to: OrderStatus) {
   const { restaurant, userId } = await requireOwnedRestaurant();
 
@@ -19,13 +20,12 @@ async function advanceOrder(orderId: string, to: OrderStatus) {
     where: { id: orderId },
     select: { id: true, status: true, restaurantId: true },
   });
-  // Ownership re-check: never act on another restaurant's order.
   if (!order || order.restaurantId !== restaurant.id) {
     throw new Error("Order not found");
   }
 
   const from = order.status;
-  assertTransition(from, to); // throws IllegalTransitionError if not allowed
+  assertTransition(from, to, "RESTAURANT");
 
   await prisma.$transaction([
     prisma.order.update({ where: { id: order.id }, data: { status: to } }),
@@ -50,10 +50,6 @@ export async function startPreparing(orderId: string) {
   await advanceOrder(orderId, "PREPARING");
 }
 
-export async function outForDelivery(orderId: string) {
-  await advanceOrder(orderId, "OUT_FOR_DELIVERY");
-}
-
-export async function markDelivered(orderId: string) {
-  await advanceOrder(orderId, "DELIVERED");
+export async function markReady(orderId: string) {
+  await advanceOrder(orderId, "READY");
 }

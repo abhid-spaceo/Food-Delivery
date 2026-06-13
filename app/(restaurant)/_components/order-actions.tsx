@@ -6,8 +6,7 @@ import {
   acceptOrder,
   rejectOrder,
   startPreparing,
-  outForDelivery,
-  markDelivered,
+  markReady,
 } from "@/app/(restaurant)/restaurant/orders/[id]/actions";
 
 // Renders ONLY the buttons legal for the order's current status, driven by
@@ -18,8 +17,9 @@ const ACTION_FOR: Record<OrderStatus, ((orderId: string) => Promise<void>) | und
   ACCEPTED: acceptOrder,
   REJECTED: rejectOrder,
   PREPARING: startPreparing,
-  OUT_FOR_DELIVERY: outForDelivery,
-  DELIVERED: markDelivered,
+  READY: markReady,
+  OUT_FOR_DELIVERY: undefined, // driver-driven (claim from pool), never a restaurant button
+  DELIVERED: undefined, // driver-driven
   PLACED: undefined, // PLACED is never a transition target here
   CANCELLED: undefined, // customer/admin-only branch
 };

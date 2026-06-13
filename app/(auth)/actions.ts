@@ -13,6 +13,7 @@ const ROLE_HOME: Record<Role, string> = {
   ADMIN: "/admin",
   RESTAURANT: "/restaurant",
   CUSTOMER: "/browse",
+  DRIVER: "/driver",
 };
 
 export type AuthFormState = { error?: string };
