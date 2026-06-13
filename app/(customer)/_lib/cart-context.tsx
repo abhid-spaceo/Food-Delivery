@@ -39,8 +39,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart>(EMPTY_CART);
   const [hydrated, setHydrated] = useState(false);
 
-  // Load from localStorage once on mount (client only).
+  // Load from localStorage once on mount (client only). setState in this effect is
+  // intentional and correct: localStorage isn't available during SSR, so reading it
+  // in a useState initializer would cause a hydration mismatch. The canonical
+  // hydrate-from-storage pattern is to start empty and reconcile post-mount.
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- see comment above */
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setCart(JSON.parse(raw) as Cart);
@@ -48,6 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // ignore malformed storage — start with an empty cart
     }
     setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Persist after every change (once hydrated, so we don't clobber on first paint).
