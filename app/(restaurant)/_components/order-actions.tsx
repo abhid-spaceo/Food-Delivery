@@ -1,3 +1,4 @@
+import { Check, X, ChefHat, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { nextStatuses } from "@/lib/orders/state";
 import { actionLabel } from "@/app/(restaurant)/_lib/format";
@@ -24,6 +25,14 @@ const ACTION_FOR: Record<OrderStatus, ((orderId: string) => Promise<void>) | und
   CANCELLED: undefined, // customer/admin-only branch
 };
 
+// Decorative icon paired with each transition target; does not affect the label.
+const ACTION_ICON: Partial<Record<OrderStatus, React.ReactNode>> = {
+  ACCEPTED: <Check className="size-4" />,
+  REJECTED: <X className="size-4" />,
+  PREPARING: <ChefHat className="size-4" />,
+  READY: <PackageCheck className="size-4" />,
+};
+
 export function OrderActions({ orderId, status }: { orderId: string; status: OrderStatus }) {
   const targets = nextStatuses(status).filter((t) => ACTION_FOR[t]);
 
@@ -40,6 +49,7 @@ export function OrderActions({ orderId, status }: { orderId: string; status: Ord
         return (
           <form key={to} action={action.bind(null, orderId)}>
             <Button type="submit" variant={to === "REJECTED" ? "destructive" : "default"}>
+              {ACTION_ICON[to]}
               {actionLabel(to)}
             </Button>
           </form>

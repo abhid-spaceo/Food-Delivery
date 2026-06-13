@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ImageFrame } from "@/components/ui/image-frame";
 import { prisma } from "@/lib/db";
 import { getOwnedRestaurant } from "@/app/(restaurant)/_lib/restaurant";
 import { DashboardShell } from "@/app/(restaurant)/_components/dashboard-shell";
@@ -56,9 +58,13 @@ export default async function MenuPage() {
           {categories.map((category) => (
             <section key={category.id}>
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wide">
-                  {category.name}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide">
+                    {category.name}
+                  </h2>
+                  {/* Item count chip */}
+                  <Badge variant="gray">{category.items.length}</Badge>
+                </div>
                 <div className="flex items-center gap-2">
                   <ItemFormDialog
                     categoryId={category.id}
@@ -88,11 +94,15 @@ export default async function MenuPage() {
                         key={item.id}
                         className="flex flex-wrap items-center justify-between gap-2 border-b py-2 last:border-0"
                       >
-                        <div className="min-w-0">
-                          <span className="font-medium">{item.name}</span>
-                          <span className="ml-2 text-sm text-muted-foreground">
-                            {formatCents(item.priceCents)}
-                          </span>
+                        {/* Thumbnail + name + price */}
+                        <div className="flex min-w-0 items-center gap-3">
+                          <ImageFrame size="sm" />
+                          <div className="min-w-0">
+                            <span className="font-medium">{item.name}</span>
+                            <span className="ml-2 text-sm text-muted-foreground">
+                              {formatCents(item.priceCents)}
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {/* Availability toggle: posts the flipped value */}
@@ -103,7 +113,11 @@ export default async function MenuPage() {
                               name="isAvailable"
                               value={(!item.isAvailable).toString()}
                             />
-                            <Button type="submit" size="sm" variant="outline">
+                            <Button
+                              type="submit"
+                              size="sm"
+                              variant={item.isAvailable ? "outline" : "secondary"}
+                            >
                               {item.isAvailable ? "Available" : "Unavailable"}
                             </Button>
                           </form>
