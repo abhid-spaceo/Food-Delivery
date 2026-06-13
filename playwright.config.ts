@@ -5,6 +5,11 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
+  // One shared Postgres DB backs every spec, so specs must run serially —
+  // otherwise specs that drive the same queue (customer + restaurant) race and
+  // steal each other's orders. fullyParallel:false alone still allows multiple
+  // workers across files; workers:1 forces a single serial worker.
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
   use: {

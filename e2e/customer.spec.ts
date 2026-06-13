@@ -16,15 +16,20 @@ async function signIn(page: import("@playwright/test").Page, email: string) {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("password123");
   await page.getByRole("button", { name: "Sign in" }).click();
+  // Wait for the post-login redirect so the session is established before any
+  // subsequent navigation to a guarded route (otherwise it races to /signin).
+  await page.waitForURL((url) => !url.pathname.includes("/signin"));
 }
 
 async function addMargheritaToCart(page: import("@playwright/test").Page) {
   await page.goto("/browse");
   await page.getByRole("link", { name: "Mario's Pizza" }).click();
   await expect(page).toHaveURL(/\/restaurants\/.+/);
-  // Add one Margherita (the first item's Add button).
-  const row = page.locator("text=Margherita").locator("xpath=ancestor::*[self::div][1]");
+  // Add one Margherita (the first item's Add button), then wait for the cart
+  // badge to reflect it — this guarantees the React state update AND the
+  // localStorage persist have flushed before we navigate away.
   await page.getByRole("button", { name: "Add" }).first().click();
+  await expect(page.getByRole("link", { name: "Cart" })).toContainText("1");
 }
 
 // Happy path: place + pay + see it advance.
@@ -36,7 +41,7 @@ test("customer places an order, pays (stub), and tracks it to READY", async ({ p
 
   await page.getByRole("link", { name: "Cart" }).click();
   await expect(page).toHaveURL("/cart");
-  await expect(page.getByText("Total")).toBeVisible();
+  await expect(page.getByText("Total", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Proceed to checkout" }).click();
   await expect(page).toHaveURL("/checkout");
@@ -73,8 +78,9 @@ test("customer places an order, pays (stub), and tracks it to READY", async ({ p
 // Negative: a customer cannot open an order that isn't theirs (unknown id -> 404).
 test("ownership: unknown order id renders not-found", async ({ page }) => {
   await signIn(page, "customer@demo.test");
+  // An order that isn't this customer's renders Next's not-found page.
   await page.goto("/orders/does-not-exist-id");
-  await expect(page.getByText(/not found|404|This page could not be found/i)).toBeVisible();
+  await expect(page).toHaveTitle(/404|could not be found/i);
 });
 
 // Negative: cancel is allowed only before acceptance (while PLACED).
@@ -88,7 +94,8 @@ test("customer can cancel an order while it is still PLACED", async ({ page }) =
 
   page.on("dialog", (d) => d.accept()); // confirm() -> OK
   await page.getByRole("button", { name: "Cancel order" }).click();
-  await expect(page.getByTestId("current-status")).toContainText("Cancelled");
+  // The timeline is SWR-polled (5s); allow more than one interval for it to reflect the cancel.
+  await expect(page.getByTestId("current-status")).toContainText("Cancelled", { timeout: 12_000 });
 });
 
 // Negative: single-restaurant cart — adding from a second restaurant prompts to
@@ -102,6 +109,9 @@ test("single-restaurant cart: declining the replace prompt keeps the first item"
   // Go to Spice Hub and try to add — decline the confirm.
   page.once("dialog", (d) => d.dismiss()); // confirm() -> Cancel
   await page.goto("/browse");
+  // Wait for the cart to re-hydrate from localStorage (badge shows the Mario's
+  // item) before adding from a second restaurant, so the conflict actually fires.
+  await expect(page.getByRole("link", { name: "Cart" })).toContainText("1");
   await page.getByRole("link", { name: "Spice Hub" }).click();
   await page.getByRole("button", { name: "Add" }).first().click();
 
