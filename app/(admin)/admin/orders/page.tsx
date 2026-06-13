@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
+import { isTerminal } from "@/lib/orders/state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/app/(admin)/_components/badge";
 import { FilterBar } from "@/app/(admin)/_components/filter-bar";
 import { formatCents } from "@/app/(admin)/_components/money";
 import { Table, THead, TBody, TR, TH, TD } from "@/app/(admin)/_components/table";
 import { Button } from "@/components/ui/button";
-import { adminMarkPaid } from "./actions";
+import { adminMarkPaid, forceCancelOrder, reassignDriver } from "./actions";
 
 // Admin Orders ("/admin/orders", S17). All orders with an optional ?status=
 // filter. ?id= opens a read-only detail panel above the table.
@@ -121,15 +122,23 @@ export default async function AdminOrdersPage({
   const { status, id } = await searchParams;
   const filter = parseStatus(status);
 
-  const orders = await prisma.order.findMany({
-    where: filter ? { status: filter } : undefined,
-    orderBy: { createdAt: "desc" },
-    include: {
-      restaurant: { select: { name: true } },
-      customer: { select: { name: true, email: true } },
-      payment: { select: { status: true } },
-    },
-  });
+  const [orders, approvedDrivers] = await Promise.all([
+    prisma.order.findMany({
+      where: filter ? { status: filter } : undefined,
+      orderBy: { createdAt: "desc" },
+      include: {
+        restaurant: { select: { name: true } },
+        customer: { select: { name: true, email: true } },
+        payment: { select: { status: true } },
+      },
+    }),
+    // Fetch APPROVED drivers once so the Reassign selects don't each query the DB.
+    prisma.driver.findMany({
+      where: { status: "APPROVED" },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   // Preserve the active status filter when linking into a detail view.
   const detailQuery = filter ? `&status=${filter}` : "";
@@ -181,7 +190,7 @@ export default async function AdminOrdersPage({
                 </TD>
                 <TD className="text-right tabular-nums">{formatCents(order.totalCents)}</TD>
                 <TD className="text-right">
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     {(order.payment?.status ?? "PENDING") === "PENDING" && (
                       <form action={adminMarkPaid}>
                         <input type="hidden" name="id" value={order.id} />
@@ -190,6 +199,42 @@ export default async function AdminOrdersPage({
                         </Button>
                       </form>
                     )}
+                    {!isTerminal(order.status) && (
+                      <form action={forceCancelOrder}>
+                        <input type="hidden" name="id" value={order.id} />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="outline"
+                          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          Force cancel
+                        </Button>
+                      </form>
+                    )}
+                    {order.status === "OUT_FOR_DELIVERY" &&
+                      approvedDrivers.length > 0 && (
+                        <form action={reassignDriver} className="flex items-center gap-1">
+                          <input type="hidden" name="id" value={order.id} />
+                          <select
+                            name="newDriverId"
+                            className="rounded border border-border bg-background px-2 py-1 text-xs"
+                            defaultValue=""
+                          >
+                            <option value="" disabled>
+                              Reassign to…
+                            </option>
+                            {approvedDrivers.map((d) => (
+                              <option key={d.id} value={d.id}>
+                                {d.name}
+                              </option>
+                            ))}
+                          </select>
+                          <Button type="submit" size="sm" variant="outline">
+                            Reassign
+                          </Button>
+                        </form>
+                      )}
                     <Link
                       href={`/admin/orders?id=${order.id}${detailQuery}`}
                       className="text-primary hover:underline"
