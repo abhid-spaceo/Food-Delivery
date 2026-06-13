@@ -5,6 +5,7 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { prisma } from "@/lib/db";
 import { getCustomerId } from "@/app/(customer)/_lib/customer";
 import { formatCents, orderRef, statusLabel } from "@/app/(customer)/_lib/format";
+import { PayButton } from "./_components/pay-button";
 import { MarkPaidButton } from "./_components/mark-paid-button";
 import { OrderTracker } from "./_components/order-tracker";
 import { CancelOrderButton } from "./_components/cancel-order-button";
@@ -63,14 +64,18 @@ export default async function OrderPage({
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{order.restaurant.name}</p>
 
-      {/* Payment pending card — E2E: getByRole("button", { name: "Mark as paid (dev)" }) */}
+      {/* Payment pending card — shows both Stripe and dev buttons while PENDING.
+          E2E: getByRole("button", { name: "Mark as paid (dev)" }) — text preserved. */}
       {isPending ? (
         <Card className="mt-6 border-warning/40 bg-warning-soft/40">
-          <CardContent className="flex items-center justify-between gap-4 p-5">
+          <CardContent className="p-5 space-y-3">
             <p className="text-sm text-foreground">
-              Payment pending. In production this is Stripe; for now, simulate it.
+              Payment pending — complete your payment to confirm this order.
             </p>
-            <MarkPaidButton orderId={order.id} />
+            <div className="flex flex-wrap items-center gap-3">
+              <PayButton orderId={order.id} />
+              <MarkPaidButton orderId={order.id} />
+            </div>
           </CardContent>
         </Card>
       ) : null}
