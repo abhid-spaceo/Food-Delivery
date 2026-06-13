@@ -39,49 +39,37 @@ async function addMargheritaToCart(page: import("@playwright/test").Page): Promi
 
 test("owner closes store; customer cannot place order; owner reopens; order goes through", async ({
   page,
-  context,
 }) => {
-  // Step 1: sign in as owner and close the store.
+  // Single page, re-authenticating between roles — one browser context shares one
+  // session cookie, so a second page signed in as another role would clobber it.
+
+  // 1) Owner closes the store (toggle reads "Close store" when open).
   await signIn(page, "owner@demo.test");
   await page.goto("/restaurant/profile");
-  // Confirm store is currently Open (pill text).
-  await expect(page.getByText("Open")).toBeVisible();
-  // Close it.
+  await expect(page.getByRole("button", { name: "Close store" })).toBeVisible();
   await page.getByRole("button", { name: "Close store" }).click();
-  // Pill should now say "Closed".
-  await expect(page.getByText("Closed")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open store" })).toBeVisible();
 
-  // Step 2: customer adds item to cart (restaurant is still visible/approved).
-  // We use a second browser context so sessions don't conflict.
-  const customerPage = await context.newPage();
-  await signIn(customerPage, "customer@demo.test");
-  // Restaurant detail should show "Closed" badge.
-  await customerPage.goto("/browse");
-  await customerPage.getByRole("link", { name: "Mario's Pizza" }).click();
-  await expect(customerPage).toHaveURL(/\/restaurants\/.+/);
-  // "Currently not accepting orders" note replaces Add buttons.
-  await expect(customerPage.getByText("Currently not accepting orders").first()).toBeVisible();
-  // Add button must not be present.
-  await expect(customerPage.getByRole("button", { name: "Add" })).toHaveCount(0);
+  // 2) Customer sees the closed state — the "not accepting" note, no Add buttons.
+  await signIn(page, "customer@demo.test");
+  await page.goto("/browse");
+  await page.getByRole("link", { name: "Mario's Pizza" }).click();
+  await expect(page).toHaveURL(/\/restaurants\/.+/);
+  await expect(page.getByText("Currently not accepting orders").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add" })).toHaveCount(0);
 
-  // Step 3: if somehow the customer managed to cart items (e.g. before it closed),
-  // the checkout server-action gate blocks them. Simulate by going to checkout
-  // directly with a manually seeded cart — not possible without JS; verify the
-  // server gate message instead via a minimal form post. This spec focuses on the
-  // UI gate (no Add button) as the primary check. Server-action gate is covered
-  // by unit-level code review.
-
-  // Step 4: owner reopens the store.
+  // 3) Owner reopens the store.
+  await signIn(page, "owner@demo.test");
   await page.goto("/restaurant/profile");
-  await expect(page.getByText("Closed")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open store" })).toBeVisible();
   await page.getByRole("button", { name: "Open store" }).click();
-  await expect(page.getByText("Open")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close store" })).toBeVisible();
 
-  // Step 5: customer can now see Add buttons again.
-  await customerPage.reload();
-  await expect(customerPage.getByRole("button", { name: "Add" }).first()).toBeVisible();
-
-  await customerPage.close();
+  // 4) Customer can add again.
+  await signIn(page, "customer@demo.test");
+  await page.goto("/browse");
+  await page.getByRole("link", { name: "Mario's Pizza" }).click();
+  await expect(page.getByRole("button", { name: "Add" }).first()).toBeVisible();
 });
 
 // ── Offline-driver gate ────────────────────────────────────────────────────────

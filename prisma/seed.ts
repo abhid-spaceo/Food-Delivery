@@ -28,7 +28,8 @@ async function main() {
 
   const restaurant = await prisma.restaurant.upsert({
     where: { ownerId: owner.id },
-    update: {},
+    // Reset mutable fields a test may flip, so reseeding is deterministic.
+    update: { status: "APPROVED", isAcceptingOrders: true },
     create: {
       ownerId: owner.id,
       name: "Mario's Pizza",
@@ -105,7 +106,7 @@ async function main() {
   });
   const restaurant2 = await prisma.restaurant.upsert({
     where: { ownerId: owner2.id },
-    update: {},
+    update: { status: "APPROVED", isAcceptingOrders: true },
     create: { ownerId: owner2.id, name: "Spice Hub", cuisine: "Indian", status: "APPROVED", hours: "Mon–Sun 11:00–23:00", deliveryArea: "Downtown" },
   });
   const cat2 = await prisma.menuCategory.count({ where: { restaurantId: restaurant2.id } });
