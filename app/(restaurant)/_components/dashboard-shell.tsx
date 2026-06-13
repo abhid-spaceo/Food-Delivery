@@ -14,9 +14,11 @@ export function DashboardShell({
     <div>
       <AppHeader title="Restaurant dashboard" />
       <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
-        <RestaurantNav />
+        <aside className="w-52 shrink-0 self-start rounded-xl border bg-card p-2 shadow-sm">
+          <RestaurantNav />
+        </aside>
         <main className="min-w-0 flex-1">
-          <h1 className="mb-6 text-2xl font-semibold">{title}</h1>
+          <h1 className="mb-6 text-2xl font-bold tracking-tight">{title}</h1>
           {children}
         </main>
       </div>

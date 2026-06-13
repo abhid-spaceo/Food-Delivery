@@ -8,10 +8,16 @@ import { Button } from "@/components/ui/button";
 export async function AppHeader({ title }: { title: string }) {
   const session = await auth();
   return (
-    <header className="flex items-center justify-between border-b px-6 py-3">
-      <Link href="/" className="font-semibold">
-        {title}
-      </Link>
+    <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-card/80 px-6 py-3 backdrop-blur">
+      <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-foreground">
+          <span className="grid size-7 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+            QB
+          </span>
+          QwikBite
+        </Link>
+        <span className="text-sm text-muted-foreground">{title}</span>
+      </div>
       <div className="flex items-center gap-3">
         {session?.user ? (
           <>

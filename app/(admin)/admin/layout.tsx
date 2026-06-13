@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div>
       <AppHeader title="Admin dashboard" />
       <div className="mx-auto flex max-w-6xl gap-6 px-6 py-8">
-        <aside className="w-48 shrink-0 rounded-lg border">
+        <aside className="w-52 shrink-0 self-start rounded-xl bg-[#15141a] p-2 text-white shadow-sm">
           <AdminNav />
         </aside>
         <main className="min-w-0 flex-1">{children}</main>
