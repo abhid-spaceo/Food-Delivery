@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatusChip } from "@/components/ui/status-chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getCustomerId } from "@/app/(customer)/_lib/customer";
 import { formatCents, orderRef, statusLabel } from "@/app/(customer)/_lib/format";
@@ -31,27 +34,38 @@ export default async function OrdersPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
       <h1 className="text-2xl font-semibold">Your orders</h1>
+
       {orders.length === 0 ? (
-        <p className="mt-6 rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-          No orders yet.{" "}
-          <Link href="/browse" className="underline">
-            Browse restaurants
-          </Link>
-          .
-        </p>
+        <EmptyState
+          icon="📦"
+          title="No orders yet"
+          description="Place your first order and it will appear here."
+          action={
+            <Button asChild variant="gradient" size="sm">
+              <Link href="/browse">Browse restaurants</Link>
+            </Button>
+          }
+          className="mt-6"
+        />
       ) : (
         <div className="mt-6 flex flex-col gap-3">
           {orders.map((o) => (
-            <Link key={o.id} href={`/orders/${o.id}`} className="block">
-              <Card className="transition-shadow hover:shadow-md">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div>
-                    <p className="font-medium">
+            // E2E: getByRole("link") on order cards — the link wraps the card
+            <Link key={o.id} href={`/orders/${o.id}`} className="block group">
+              <Card elevated className="transition-colors group-hover:border-primary/30">
+                <CardContent className="flex items-center justify-between gap-4 p-4">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">
                       {o.restaurant.name} · {orderRef(o.id)}
                     </p>
-                    <p className="text-sm text-muted-foreground">{statusLabel(o.status)}</p>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      {/* StatusChip uses the status→variant mapping from status-chip.tsx */}
+                      <StatusChip status={o.status} label={statusLabel(o.status)} />
+                    </div>
                   </div>
-                  <span className="font-semibold">{formatCents(o.totalCents)}</span>
+                  <span className="shrink-0 font-semibold tabular-nums">
+                    {formatCents(o.totalCents)}
+                  </span>
                 </CardContent>
               </Card>
             </Link>

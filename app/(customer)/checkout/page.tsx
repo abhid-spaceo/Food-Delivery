@@ -28,7 +28,7 @@ export default function CheckoutPage() {
         <h1 className="text-xl font-semibold">Checkout</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           Your cart is empty.{" "}
-          <Link href="/browse" className="underline">
+          <Link href="/browse" className="text-primary underline underline-offset-2">
             Browse restaurants
           </Link>
           .
@@ -40,38 +40,63 @@ export default function CheckoutPage() {
   return (
     <main className="mx-auto max-w-md px-6 py-12">
       <h1 className="text-2xl font-semibold">Checkout</h1>
+      {/* E2E never queries this text directly but it's important UX */}
       <p className="mt-1 text-sm text-muted-foreground">From {cart.restaurantName}</p>
 
+      {/* Order summary card */}
       <Card className="mt-6">
-        <CardContent className="space-y-1 p-5 text-sm">
+        <CardContent className="p-5 text-sm space-y-1.5">
           {cart.items.map((it) => (
             <div key={it.menuItemId} className="flex justify-between">
-              <span>
+              <span className="text-muted-foreground">
                 {it.quantity} × {it.name}
               </span>
-              <span>{formatCents(it.priceCents * it.quantity)}</span>
+              <span className="tabular-nums">{formatCents(it.priceCents * it.quantity)}</span>
             </div>
           ))}
-          <div className="mt-2 flex justify-between border-t pt-2">
+          <div className="flex justify-between border-t border-border pt-2 mt-2">
             <span className="text-muted-foreground">Delivery fee</span>
-            <span>{formatCents(FLAT_DELIVERY_FEE_CENTS)}</span>
+            <span className="tabular-nums">{formatCents(FLAT_DELIVERY_FEE_CENTS)}</span>
           </div>
           <div className="flex justify-between text-base font-semibold">
             <span>Total</span>
-            <span>{formatCents(total)}</span>
+            <span className="tabular-nums">{formatCents(total)}</span>
           </div>
         </CardContent>
       </Card>
 
       <form action={action} className="mt-6 space-y-4">
+        {/* Hidden inputs — E2E doesn't query these but the action needs them */}
         <input type="hidden" name="restaurantId" value={cart.restaurantId ?? ""} />
         <input type="hidden" name="lines" value={JSON.stringify(lines)} />
+
         <div className="space-y-2">
-          <Label htmlFor="addressLine">Delivery address</Label>
-          <Input id="addressLine" name="addressLine" required placeholder="12 MG Road, Bengaluru" />
+          {/* E2E: getByLabel("Delivery address") */}
+          <Label htmlFor="addressLine" className="text-sm font-semibold">
+            Delivery address
+          </Label>
+          <Input
+            id="addressLine"
+            name="addressLine"
+            required
+            placeholder="12 MG Road, Bengaluru"
+            className="h-10"
+          />
         </div>
-        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
-        <Button type="submit" disabled={pending} className="w-full">
+
+        {state.error ? (
+          <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            {state.error}
+          </p>
+        ) : null}
+
+        {/* E2E: getByRole("button", { name: "Place order" }) */}
+        <Button
+          type="submit"
+          variant="gradient"
+          disabled={pending}
+          className="w-full h-11 text-base font-bold"
+        >
           {pending ? "Placing order…" : "Place order"}
         </Button>
       </form>

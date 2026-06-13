@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatusChip } from "@/components/ui/status-chip";
 import { prisma } from "@/lib/db";
 import { getCustomerId } from "@/app/(customer)/_lib/customer";
 import { formatCents, orderRef, statusLabel } from "@/app/(customer)/_lib/format";
@@ -48,18 +49,25 @@ export default async function OrderPage({
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
       {placed === "1" ? <ClearCartOnMount /> : null}
-      <Link href="/orders" className="text-sm text-muted-foreground underline">
+
+      <Link
+        href="/orders"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
         ← All orders
       </Link>
-      <h1 className="mt-3 text-2xl font-semibold">Order {orderRef(order.id)}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {order.restaurant.name} · {statusLabel(order.status)}
-      </p>
 
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Order {orderRef(order.id)}</h1>
+        <StatusChip status={order.status} label={statusLabel(order.status)} />
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">{order.restaurant.name}</p>
+
+      {/* Payment pending card — E2E: getByRole("button", { name: "Mark as paid (dev)" }) */}
       {isPending ? (
-        <Card className="mt-6 border-primary/40">
+        <Card className="mt-6 border-warning/40 bg-warning-soft/40">
           <CardContent className="flex items-center justify-between gap-4 p-5">
-            <p className="text-sm">
+            <p className="text-sm text-foreground">
               Payment pending. In production this is Stripe; for now, simulate it.
             </p>
             <MarkPaidButton orderId={order.id} />
@@ -67,34 +75,38 @@ export default async function OrderPage({
         </Card>
       ) : null}
 
+      {/* Order items + bill */}
       <Card className="mt-6">
-        <CardContent className="space-y-1 p-5 text-sm">
+        <CardContent className="space-y-1.5 p-5 text-sm">
           {order.items.map((it, i) => (
             <div key={i} className="flex justify-between">
-              <span>
+              <span className="text-muted-foreground">
                 {it.quantity} × {it.name}
               </span>
-              <span>{formatCents(it.priceCents * it.quantity)}</span>
+              <span className="tabular-nums">{formatCents(it.priceCents * it.quantity)}</span>
             </div>
           ))}
-          <div className="mt-2 flex justify-between border-t pt-2">
+          <div className="mt-2 flex justify-between border-t border-border pt-2">
             <span className="text-muted-foreground">Subtotal</span>
-            <span>{formatCents(order.subtotalCents)}</span>
+            <span className="tabular-nums">{formatCents(order.subtotalCents)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Delivery fee</span>
-            <span>{formatCents(order.deliveryFeeCents)}</span>
+            <span className="tabular-nums">{formatCents(order.deliveryFeeCents)}</span>
           </div>
           <div className="flex justify-between text-base font-semibold">
             <span>Total</span>
-            <span>{formatCents(order.totalCents)}</span>
+            <span className="tabular-nums">{formatCents(order.totalCents)}</span>
           </div>
-          <p className="pt-2 text-xs text-muted-foreground">Deliver to: {order.addressLine}</p>
+          <p className="pt-2 text-xs text-muted-foreground">
+            Deliver to: {order.addressLine}
+          </p>
         </CardContent>
       </Card>
 
+      {/* Tracking timeline */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Tracking
         </h2>
         <OrderTracker
@@ -107,6 +119,7 @@ export default async function OrderPage({
         />
       </section>
 
+      {/* Cancel — only while PLACED; E2E: getByRole("button", { name: "Cancel order" }) */}
       {order.status === "PLACED" ? (
         <div className="mt-6">
           <CancelOrderButton orderId={order.id} />

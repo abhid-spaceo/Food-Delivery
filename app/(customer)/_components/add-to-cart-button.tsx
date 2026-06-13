@@ -27,7 +27,12 @@ export function AddToCartButton({ restaurant, item }: Props) {
   }
 
   return (
-    <Button size="sm" variant="outline" onClick={onAdd}>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={onAdd}
+      className="border-primary/50 text-primary hover:bg-accent hover:text-accent-foreground font-bold"
+    >
       Add
     </Button>
   );

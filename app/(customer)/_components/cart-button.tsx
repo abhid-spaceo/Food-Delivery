@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/app/(customer)/_lib/cart-context";
 import { cartItemCount } from "@/app/(customer)/_lib/cart";
 
@@ -11,11 +12,17 @@ export function CartButton() {
   return (
     <Link
       href="/cart"
-      className="relative rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+      aria-label={count > 0 ? `Cart, ${count} items` : "Cart"}
+      className="relative inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-card)]"
     >
+      <ShoppingCart className="size-4 shrink-0" aria-hidden="true" />
+      {/* "Cart" text must remain for the E2E getByRole("link", { name: "Cart" }) selector */}
       Cart
       {count > 0 ? (
-        <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+        <span
+          className="ml-0.5 inline-flex size-5 items-center justify-center rounded-full text-xs font-bold text-white"
+          style={{ background: "var(--gradient-brand)" }}
+        >
           {count}
         </span>
       ) : null}
