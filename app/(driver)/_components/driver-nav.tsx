@@ -23,11 +23,18 @@ export function DriverNav() {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              active ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-muted",
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-[var(--dur-fast)]",
+              active
+                ? "bg-primary text-primary-foreground shadow-[var(--shadow-sm)]"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            <Icon className="size-4" />
+            <Icon
+              className={cn(
+                "size-4 shrink-0",
+                active ? "opacity-100" : "opacity-70",
+              )}
+            />
             {label}
           </Link>
         );

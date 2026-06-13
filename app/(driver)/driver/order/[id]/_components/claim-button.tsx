@@ -5,12 +5,15 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { claimOrder } from "../actions";
 
+// Visual-only change: gradient variant. Text "Claim this order" preserved for E2E.
 export function ClaimButton({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
     <Button
-      disabled={pending}
+      variant="gradient"
+      className="w-full"
+      loading={pending}
       onClick={() =>
         start(async () => {
           try {

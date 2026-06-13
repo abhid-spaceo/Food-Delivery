@@ -13,7 +13,7 @@ export default async function PoolPage() {
 
   const initial = await getPool();
   return (
-    <DriverShell title="Pickup pool">
+    <DriverShell title="Orders ready for pickup">
       <PoolBoard initial={initial} />
     </DriverShell>
   );

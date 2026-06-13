@@ -6,7 +6,8 @@ import { getEarnings, getMyDeliveries } from "@/app/(driver)/_lib/deliveries";
 import { formatCents } from "@/app/(restaurant)/_lib/format";
 
 // Earnings ("/driver/earnings"): total delivered-fee tally (display only, no
-// payouts) + delivered count, scoped to THIS driver.
+// payouts) + stat tiles, scoped to THIS driver.
+// formatCents(totalCents) renders "$2.99" — preserved for E2E.
 export default async function EarningsPage() {
   const driver = await getDriver();
   if (driver?.status !== "APPROVED") redirect("/driver");
@@ -17,23 +18,40 @@ export default async function EarningsPage() {
   ]);
 
   return (
-    <DriverShell title="Earnings">
-      <div className="grid grid-cols-2 gap-4 sm:max-w-md">
-        <Card className="shadow-sm">
-          <CardContent className="p-5">
-            <div className="text-3xl font-bold tabular-nums">{formatCents(totalCents)}</div>
-            <div className="mt-1 text-sm text-muted-foreground">Total earned (delivered fees)</div>
+    <DriverShell title="Your earnings">
+      {/* Gradient total card — matches D6 mockup */}
+      <Card
+        className="mb-4 border-none text-white sm:max-w-md"
+        style={{ background: "var(--gradient-brand)" }}
+      >
+        <CardContent className="p-6">
+          <p className="text-xs font-bold uppercase tracking-wide opacity-90">Total earned</p>
+          {/* formatCents output e.g. "$2.99" — E2E asserts this */}
+          <p className="mt-1 text-4xl font-black tabular-nums">{formatCents(totalCents)}</p>
+          <p className="mt-1 text-sm opacity-90">from {past.length} delivered orders</p>
+        </CardContent>
+      </Card>
+
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 gap-3 sm:max-w-md">
+        <Card>
+          <CardContent className="p-5 text-center">
+            <p className="text-3xl font-black tabular-nums text-foreground">{past.length}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Deliveries</p>
           </CardContent>
         </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-5">
-            <div className="text-3xl font-bold tabular-nums">{past.length}</div>
-            <div className="mt-1 text-sm text-muted-foreground">Deliveries completed</div>
+        <Card>
+          <CardContent className="p-5 text-center">
+            <p className="text-3xl font-black tabular-nums text-foreground">
+              {past.length > 0 ? formatCents(Math.round(totalCents / past.length)) : "—"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Avg per delivery</p>
           </CardContent>
         </Card>
       </div>
+
       <p className="mt-4 text-xs text-muted-foreground">
-        Earnings are display-only in this build (no payouts).
+        Earnings = sum of delivery fees on your delivered orders. Display only — no payout integration.
       </p>
     </DriverShell>
   );
