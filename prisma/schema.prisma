@@ -1,0 +1,163 @@
+// Food Delivery Platform — Prisma schema
+// Derived from docs/food-delivery/PRD.md Phase 5.
+// Money is ALWAYS integer cents (never floats). See CLAUDE.md business rules.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  // Prisma 7: connection URL lives in prisma.config.ts (CLI) and is passed to
+  // PrismaClient via a driver adapter at runtime (see lib/db.ts). Not here.
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  RESTAURANT
+  ADMIN
+}
+
+enum RestaurantStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PLACED
+  ACCEPTED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String?
+  passwordHash String
+  role         Role        @default(CUSTOMER)
+  restaurant   Restaurant?
+  addresses    Address[]
+  orders       Order[]     @relation("CustomerOrders")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Restaurant {
+  id           String           @id @default(cuid())
+  ownerId      String           @unique
+  owner        User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  cuisine      String
+  status       RestaurantStatus @default(PENDING)
+  hours        String?
+  deliveryArea String?
+  categories   MenuCategory[]
+  orders       Order[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([status])
+}
+
+model MenuCategory {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  sortOrder    Int        @default(0)
+  items        MenuItem[]
+
+  @@index([restaurantId])
+}
+
+model MenuItem {
+  id          String       @id @default(cuid())
+  categoryId  String
+  category    MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  priceCents  Int
+  imageUrl    String?
+  isAvailable Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([categoryId])
+}
+
+model Address {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  line1    String
+  city     String
+  postcode String
+
+  @@index([userId])
+}
+
+model Order {
+  id               String             @id @default(cuid())
+  customerId       String
+  customer         User               @relation("CustomerOrders", fields: [customerId], references: [id])
+  restaurantId     String
+  restaurant       Restaurant         @relation(fields: [restaurantId], references: [id])
+  status           OrderStatus        @default(PLACED)
+  subtotalCents    Int
+  deliveryFeeCents Int                @default(0)
+  totalCents       Int
+  addressLine      String // snapshot of delivery address at purchase time
+  items            OrderItem[]
+  payment          Payment?
+  events           OrderStatusEvent[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([restaurantId, status])
+  @@index([customerId])
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name       String // snapshot of item name at purchase time
+  priceCents Int // snapshot of item price at purchase time
+  quantity   Int
+
+  @@index([orderId])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String        @unique
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  stripeSessionId String?
+  status          PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model OrderStatusEvent {
+  id        String       @id @default(cuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  from      OrderStatus?
+  to        OrderStatus
+  byUserId  String?
+  createdAt DateTime     @default(now())
+
+  @@index([orderId])
+}
