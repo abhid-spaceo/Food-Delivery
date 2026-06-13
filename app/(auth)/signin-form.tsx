@@ -14,11 +14,11 @@ export function SignInForm() {
 
   return (
     <form action={action} className="space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="password">Password</Label>
         <Input
           id="password"
@@ -28,13 +28,20 @@ export function SignInForm() {
           required
         />
       </div>
-      {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
-      <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Signing in…" : "Sign in"}
+      {state.error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive"
+        >
+          {state.error}
+        </p>
+      ) : null}
+      <Button type="submit" disabled={pending} variant="gradient" className="w-full" loading={pending}>
+        Sign in
       </Button>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-center text-sm text-muted-foreground">
         No account?{" "}
-        <Link href="/signup" className="underline">
+        <Link href="/signup" className="font-medium text-primary hover:underline">
           Sign up
         </Link>
       </p>
