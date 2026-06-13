@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/app/(admin)/_components/badge";
 import { FilterBar } from "@/app/(admin)/_components/filter-bar";
 import { Table, THead, TBody, TR, TH, TD } from "@/app/(admin)/_components/table";
+import { ImageFrame } from "@/components/ui/image-frame";
 import { approveRestaurant, suspendRestaurant } from "./actions";
 
 // Admin Restaurants ("/admin/restaurants", S15). Lists all restaurants with an
@@ -38,7 +39,7 @@ export default async function AdminRestaurantsPage({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Restaurants</h1>
+        <h1 className="text-2xl font-black tracking-tight">Restaurants</h1>
         <FilterBar
           basePath="/admin/restaurants"
           param="status"
@@ -53,6 +54,7 @@ export default async function AdminRestaurantsPage({
         <Table>
           <THead>
             <TR>
+              <TH className="w-12"></TH>
               <TH>Name</TH>
               <TH>Cuisine</TH>
               <TH>Status</TH>
@@ -62,8 +64,11 @@ export default async function AdminRestaurantsPage({
           <TBody>
             {restaurants.map((r) => (
               <TR key={r.id}>
-                <TD className="font-medium">{r.name}</TD>
-                <TD>{r.cuisine}</TD>
+                <TD>
+                  <ImageFrame emoji="🍽️" size="sm" />
+                </TD>
+                <TD className="font-semibold">{r.name}</TD>
+                <TD className="text-muted-foreground">{r.cuisine}</TD>
                 <TD>
                   <Badge value={r.status} />
                 </TD>

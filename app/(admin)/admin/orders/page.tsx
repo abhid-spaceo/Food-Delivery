@@ -134,7 +134,7 @@ export default async function AdminOrdersPage({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Orders</h1>
+        <h1 className="text-2xl font-black tracking-tight">Orders</h1>
         <FilterBar
           basePath="/admin/orders"
           param="status"

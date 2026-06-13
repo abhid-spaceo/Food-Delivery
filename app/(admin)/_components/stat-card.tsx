@@ -1,12 +1,27 @@
+import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
-// KPI tile for the admin overview. Shows a big value and a label underneath.
-export function StatCard({ label, value }: { label: string; value: string | number }) {
+// KPI tile for the admin overview. Shows an optional icon, a large tabular-nums
+// value, and a label underneath. Hover lifts the card via the Card `elevated` prop.
+export function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode;
+}) {
   return (
-    <Card className="shadow-sm transition-shadow hover:shadow-md">
+    <Card elevated>
       <CardContent className="p-5">
-        <div className="text-3xl font-bold tracking-tight tabular-nums">{value}</div>
-        <div className="mt-1 text-sm text-muted-foreground">{label}</div>
+        {icon && (
+          <div className="mb-3 flex size-9 items-center justify-center rounded-xl bg-brand-soft text-primary">
+            {icon}
+          </div>
+        )}
+        <div className="text-3xl font-black tracking-tight tabular-nums text-foreground">{value}</div>
+        <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
       </CardContent>
     </Card>
   );

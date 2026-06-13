@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/app/(admin)/_components/badge";
 import { FilterBar } from "@/app/(admin)/_components/filter-bar";
 import { Table, THead, TBody, TR, TH, TD } from "@/app/(admin)/_components/table";
+import { ImageFrame } from "@/components/ui/image-frame";
 import { approveDriver, suspendDriver } from "./actions";
 
 // Admin Drivers ("/admin/drivers"). Lists drivers with an optional ?status= filter.
@@ -43,7 +44,7 @@ export default async function AdminDriversPage({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Drivers</h1>
+        <h1 className="text-2xl font-black tracking-tight">Drivers</h1>
         <FilterBar basePath="/admin/drivers" param="status" current={filter} options={FILTER_OPTIONS} />
       </div>
 
@@ -53,6 +54,7 @@ export default async function AdminDriversPage({
         <Table>
           <THead>
             <TR>
+              <TH className="w-12"></TH>
               <TH>Name</TH>
               <TH>Email</TH>
               <TH>Status</TH>
@@ -62,8 +64,11 @@ export default async function AdminDriversPage({
           <TBody>
             {drivers.map((d) => (
               <TR key={d.id}>
-                <TD className="font-medium">{d.name}</TD>
-                <TD>{d.user.email}</TD>
+                <TD>
+                  <ImageFrame emoji="🛵" size="sm" />
+                </TD>
+                <TD className="font-semibold">{d.name}</TD>
+                <TD className="text-muted-foreground">{d.user.email}</TD>
                 <TD>
                   <Badge value={d.status} />
                 </TD>

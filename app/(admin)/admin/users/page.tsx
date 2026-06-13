@@ -25,7 +25,7 @@ export default async function AdminUsersPage({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Users</h1>
+        <h1 className="text-2xl font-black tracking-tight">Users</h1>
         <form method="get" className="flex items-center gap-2">
           <Input
             type="search"
@@ -55,8 +55,8 @@ export default async function AdminUsersPage({
           <TBody>
             {users.map((u) => (
               <TR key={u.id}>
-                <TD className="font-medium">{u.name ?? "—"}</TD>
-                <TD>{u.email}</TD>
+                <TD className="font-semibold">{u.name ?? "—"}</TD>
+                <TD className="text-muted-foreground">{u.email}</TD>
                 <TD>
                   <Badge value={u.role} />
                 </TD>

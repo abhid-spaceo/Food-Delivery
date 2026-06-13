@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Store, Clock, ReceiptText, Car, DollarSign, TrendingUp } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { StatCard } from "@/app/(admin)/_components/stat-card";
 import { Badge } from "@/app/(admin)/_components/badge";
@@ -43,20 +44,20 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-semibold">Platform overview</h1>
+      <h1 className="text-2xl font-black tracking-tight">Platform overview</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Restaurants" value={totalRestaurants} />
-        <StatCard label="Pending approvals" value={pendingApprovals} />
-        <StatCard label="Total orders" value={totalOrders} />
-        <StatCard label="Orders today" value={ordersToday} />
-        <StatCard label="Test revenue (paid)" value={formatCents(revenueCents)} />
-        <StatCard label="Drivers" value={totalDrivers} />
-        <StatCard label="Pending drivers" value={pendingDrivers} />
+        <StatCard label="Restaurants" value={totalRestaurants} icon={<Store className="size-4" />} />
+        <StatCard label="Pending approvals" value={pendingApprovals} icon={<Clock className="size-4" />} />
+        <StatCard label="Total orders" value={totalOrders} icon={<ReceiptText className="size-4" />} />
+        <StatCard label="Orders today" value={ordersToday} icon={<TrendingUp className="size-4" />} />
+        <StatCard label="Test revenue (paid)" value={formatCents(revenueCents)} icon={<DollarSign className="size-4" />} />
+        <StatCard label="Drivers" value={totalDrivers} icon={<Car className="size-4" />} />
+        <StatCard label="Pending drivers" value={pendingDrivers} icon={<Clock className="size-4" />} />
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground">Recent orders</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Recent orders</h2>
         {recentOrders.length === 0 ? (
           <p className="text-sm text-muted-foreground">No orders yet.</p>
         ) : (
