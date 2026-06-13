@@ -74,8 +74,9 @@ test("driver signs in and is redirected to /driver", async ({ page }) => {
   await page.getByLabel("Email").fill("driver@demo.test");
   await page.getByLabel("Password").fill("password123");
   await page.getByRole("button", { name: "Sign in" }).click();
-  // Assert URL only — the /driver page body is built in Phase 3.
-  await expect(page).toHaveURL("/driver");
+  // Lands in the driver area. An APPROVED driver is redirected /driver -> /driver/pool,
+  // so accept either (asserting exactly "/driver" races that redirect).
+  await expect(page).toHaveURL(/\/driver(\/pool)?$/);
 });
 
 // F7-N1 (basic): Unauthenticated user is redirected from /admin.
