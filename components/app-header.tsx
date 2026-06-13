@@ -9,21 +9,29 @@ import { Button } from "@/components/ui/button";
 export async function AppHeader({ title, children }: { title: string; children?: React.ReactNode }) {
   const session = await auth();
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-card/80 px-6 py-3 backdrop-blur">
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border/60 bg-card/85 px-6 py-3 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-foreground">
-          <span className="grid size-7 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+          {/* Gradient QB mark — matches the brand gradient token */}
+          <span
+            className="grid size-8 shrink-0 place-items-center rounded-xl text-sm font-black text-white shadow-[0_4px_10px_rgba(255,46,84,0.35)]"
+            style={{ background: "var(--gradient-brand)" }}
+          >
             QB
           </span>
-          QwikBite
+          <span className="font-black tracking-tight">QwikBite</span>
         </Link>
-        <span className="text-sm text-muted-foreground">{title}</span>
+        {title && (
+          <span className="hidden text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:block">
+            {title}
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-3">
         {children}
         {session?.user ? (
           <>
-            <span className="text-sm text-muted-foreground">
+            <span className="hidden text-sm text-muted-foreground sm:block">
               {session.user.email} · {session.user.role}
             </span>
             <SignOutButton />

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export function SignOutButton() {
   return (
     <form action={signOutAction}>
-      <Button variant="outline" size="sm" type="submit">
+      <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground hover:text-foreground">
         Sign out
       </Button>
     </form>

@@ -17,8 +17,8 @@ const LINKS = [
 export function RestaurantNav() {
   const pathname = usePathname();
   return (
-    <nav className="w-44 shrink-0">
-      <ul className="flex flex-col gap-1">
+    <nav>
+      <ul className="flex flex-col gap-0.5 p-1">
         {LINKS.map(({ href, label, icon: Icon }) => {
           // "/restaurant" is active only on exact match (orders detail lives
           // under it); the others match by prefix.
@@ -28,13 +28,13 @@ export function RestaurantNav() {
               <Link
                 href={href}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-[var(--dur-fast)]",
                   active
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-[0_2px_8px_rgba(255,59,92,0.3)]"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Icon className="size-4" />
+                <Icon className="size-4 shrink-0" />
                 {label}
               </Link>
             </li>
