@@ -58,9 +58,10 @@ test("approved driver claims a READY order, delivers it, and earns the fee", asy
   await page.getByRole("button", { name: "Mark delivered" }).click();
   await expect(page.getByText("DELIVERED")).toBeVisible();
 
-  // Earnings reflect the $2.99 delivery fee.
+  // Earnings reflect the $2.99 delivery fee. (The page shows the total AND an
+  // avg-per-delivery tile — both $2.99 with one delivery — so target the first.)
   await page.goto("/driver/earnings");
-  await expect(page.getByText("$2.99")).toBeVisible();
+  await expect(page.getByText("$2.99").first()).toBeVisible();
 });
 
 // Negative: a second driver cannot claim an order the first already took.

@@ -54,13 +54,15 @@ export function SignUpForm() {
                 has-[:checked]:border-primary has-[:checked]:bg-brand-soft has-[:checked]:text-[var(--brand-dark)]
                 hover:border-primary/50"
             >
-              {/* Visually hidden but accessible radio */}
+              {/* Real radio overlaying the chip: invisible (opacity-0) but a full-size,
+                  clickable target — so mouse users AND Playwright's .check() can act on
+                  it (sr-only/clip would make it non-actionable). */}
               <input
                 type="radio"
                 name="role"
                 value={value}
                 defaultChecked={value === "CUSTOMER"}
-                className="sr-only"
+                className="absolute inset-0 cursor-pointer opacity-0"
               />
               <span className="text-xl" aria-hidden="true">{emoji}</span>
               <span>{label}</span>

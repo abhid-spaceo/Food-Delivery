@@ -46,18 +46,20 @@ test("owner advances a paid order accept -> prepare -> ready", async ({ page }) 
   await firstOpen.click();
   await expect(page).toHaveURL(/\/restaurant\/orders\/.+/);
 
-  // PLACED -> show Accept + Reject; click Accept.
-  await expect(page.getByText("Placed", { exact: true })).toBeVisible();
+  // PLACED -> show Accept + Reject; click Accept. (Assert on the status chip via
+  // its test-id — the page also has a timeline that repeats these labels.)
+  const status = page.getByTestId("order-status");
+  await expect(status).toContainText("Placed");
   await page.getByRole("button", { name: "Accept" }).click();
-  await expect(page.getByText("Accepted", { exact: true })).toBeVisible();
+  await expect(status).toContainText("Accepted");
 
   // ACCEPTED -> Start preparing.
   await page.getByRole("button", { name: "Start preparing" }).click();
-  await expect(page.getByText("Preparing", { exact: true })).toBeVisible();
+  await expect(status).toContainText("Preparing");
 
   // PREPARING -> Mark ready (the restaurant's last legal step).
   await page.getByRole("button", { name: "Mark ready" }).click();
-  await expect(page.getByText("Ready", { exact: true })).toBeVisible();
+  await expect(status).toContainText("Ready");
 
   // The delivery leg is driver-only, so the restaurant sees no more actions.
   await expect(
@@ -79,11 +81,12 @@ test("owner can reject a placed order", async ({ page }) => {
   await expect(page).toHaveURL(/\/restaurant\/orders\/.+/);
 
   // PLACED -> click Reject.
-  await expect(page.getByText("Placed", { exact: true })).toBeVisible();
+  const status = page.getByTestId("order-status");
+  await expect(status).toContainText("Placed");
   await page.getByRole("button", { name: "Reject" }).click();
 
-  // Status badge should read "Rejected" and no further actions are shown.
-  await expect(page.getByText("Rejected", { exact: true })).toBeVisible();
+  // Status chip should read "Rejected" and no further actions are shown.
+  await expect(status).toContainText("Rejected");
   await expect(
     page.getByText("No further actions for this order."),
   ).toBeVisible();

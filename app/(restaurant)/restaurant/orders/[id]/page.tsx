@@ -93,7 +93,9 @@ export default async function OrderDetailPage({
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-3">
               <CardTitle>Order details</CardTitle>
-              <StatusBadge status={order.status} />
+              <span data-testid="order-status">
+                <StatusBadge status={order.status} />
+              </span>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
               <div className="flex items-center gap-2">
