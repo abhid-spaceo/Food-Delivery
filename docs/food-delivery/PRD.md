@@ -2,7 +2,7 @@
 
 > **Document type:** Startup-style product discovery → Professional PRD → Implementation plan
 > **Project nature:** Portfolio / demo SaaS, built by a solo developer
-> **Status:** Draft v1 · 2026-06-12
+> **Status:** Draft v2 · 2026-06-13 (added lightweight Driver role — 4 sides)
 > **Stack (fixed):** Next.js (App Router) · TypeScript · PostgreSQL · Prisma · Tailwind · shadcn/ui · Auth.js (NextAuth) · Vercel
 > **Explicitly out of scope (complexity guardrails):** microservices, Kafka, Redis, event buses, Kubernetes, distributed systems
 
@@ -10,7 +10,8 @@
 
 | Decision | Choice | Why |
 |---|---|---|
-| **Delivery model** | **Restaurant-fulfilled** — the restaurant itself moves the order to delivered. No courier app, no GPS, no dispatch engine. | Removes the three heaviest subsystems of food delivery. Keeps the product solo-buildable while still feeling real. Roles stay at **Customer / Restaurant / Admin**. |
+| **Delivery model** | **Lightweight in-house drivers** — the restaurant marks an order `READY`; an admin-approved driver self-claims it from a shared pool and moves it to delivered. **Still no GPS, no auto-dispatch, no surge, no serviceability zones.** | Adds a recognizable delivery leg (a 4th role) without the three heaviest subsystems of food delivery. Keeps the product solo-buildable while feeling more real. Roles are **Customer / Restaurant / Driver / Admin**. |
+| **Driver model** | **Self-claim from a shared pool**, first-come. Drivers onboard like restaurants (`PENDING → APPROVED`). A flat delivery fee is charged at checkout and shown back to the driver as simple earnings — **no payouts integration, no Stripe Connect.** | Mirrors the existing restaurant-approval pattern; avoids a dispatch engine entirely. |
 | **Payments** | **Stripe test-mode** (Stripe Checkout + test cards) | Production-grade feel, excellent docs, no real money. One well-contained external dependency. |
 | **Real-time** | **Status polling** (client re-fetch via SWR) | Honors the no-Redis / no-event-bus guardrail. Good enough for a demo; websockets are Future Scope. |
 
@@ -20,7 +21,7 @@
 
 ## 1.1 How modern food delivery platforms actually work
 
-A food delivery platform is a **three-sided marketplace** wrapped around a **state machine**. The three sides are *people who want food* (customers), *people who make food* (restaurants), and *the operator* who keeps the marketplace healthy (admin/platform). In full-scale products there is a fourth side — *couriers* — but as decided above, we fold delivery into the restaurant role.
+A food delivery platform is a **four-sided marketplace** wrapped around a **state machine**. The sides are *people who want food* (customers), *people who make food* (restaurants), *people who move food* (drivers), and *the operator* who keeps the marketplace healthy (admin/platform). Full-scale products give the driver side a heavy logistics layer (auto-dispatch, live GPS, surge, zones); as decided above, we keep a **lightweight** driver side — self-claim from a shared pool, status via polling — and skip that machinery entirely.
 
 Everything the platform does ultimately serves one core transaction: **a customer turns a craving into a paid order, and a restaurant turns that order into delivered food.** Each feature either (a) helps that transaction happen (discovery, cart, checkout), (b) keeps both parties informed while it happens (order tracking, dashboards), or (c) keeps the marketplace trustworthy and supplied (onboarding, admin oversight, payments).
 
@@ -40,17 +41,18 @@ Despite different branding, these products converge on the same building blocks:
 | **Status notifications** | Push/poll updates as the order advances. | All five |
 | **Ratings & reviews** | Post-delivery feedback feeds discovery ranking. | All five (we defer this) |
 
-The lesson for an MVP: **you do not need the courier/logistics layer to credibly demonstrate the product.** The marketplace + order lifecycle + payments is the recognizable core.
+The lesson for an MVP: **you do not need the *heavy* courier/logistics layer (dispatch, GPS, surge) to credibly demonstrate the product.** A lightweight self-claim driver leg on top of the marketplace + order lifecycle + payments is enough to feel like the real thing.
 
 ## 1.3 Core building blocks identified
 
-- **User roles:** Customer, Restaurant (owner/staff), Admin.
-- **Essential workflows:** browse → add to cart → checkout/pay → restaurant accepts → prepares → out for delivery → delivered; plus restaurant onboarding and menu management.
-- **Critical business entities:** User, Restaurant, MenuCategory, MenuItem, Address, Order, OrderItem, Payment, OrderStatusEvent.
-- **Standard order lifecycle:** `PLACED → ACCEPTED → PREPARING → OUT_FOR_DELIVERY → DELIVERED`, with branch states `REJECTED` (restaurant declines) and `CANCELLED` (customer/admin cancels before acceptance).
+- **User roles:** Customer, Restaurant (owner/staff), Driver, Admin.
+- **Essential workflows:** browse → add to cart → checkout/pay → restaurant accepts → prepares → marks ready → **driver claims → picks up → delivers**; plus restaurant onboarding/menu management and driver onboarding.
+- **Critical business entities:** User, Restaurant, **Driver**, MenuCategory, MenuItem, Address, Order, OrderItem, Payment, OrderStatusEvent.
+- **Standard order lifecycle:** `PLACED → ACCEPTED → PREPARING → READY → OUT_FOR_DELIVERY → DELIVERED`, with branch states `REJECTED` (restaurant declines) and `CANCELLED` (customer/admin cancels before acceptance). Restaurant drives through `READY`; an approved **driver** owns `OUT_FOR_DELIVERY` (on claim) and `DELIVERED`.
 - **Menu management pattern:** categories group items; each item has price, description, image, and an availability toggle (sold-out without deletion).
 - **Restaurant onboarding pattern:** restaurant signs up → fills profile (name, cuisine, hours, delivery area) → submits → admin approves → becomes visible to customers.
-- **Admin responsibilities:** approve/suspend restaurants, manage users, oversee all orders, view platform metrics.
+- **Driver onboarding pattern:** driver signs up → fills basic profile → submits → admin approves (`PENDING → APPROVED`) → can now claim `READY` orders from the shared pool.
+- **Admin responsibilities:** approve/suspend restaurants **and drivers**, manage users, oversee all orders, view platform metrics.
 
 ## 1.4 Feature classification (with the *why*)
 
@@ -66,6 +68,9 @@ The lesson for an MVP: **you do not need the courier/logistics layer to credibly
 | Order lifecycle state machine | The literal heartbeat of the product. |
 | Order tracking + history (customer) | Closing the loop; trust and transparency. |
 | Restaurant dashboard | Demand has to be fulfilled by someone. |
+| Driver onboarding + approval | Supply side of delivery; admin gatekeeping mirrors restaurants. |
+| Driver pickup pool + status | The delivery leg: claim a `READY` order, mark picked up → delivered. |
+| Driver earnings tally | Closes the loop for the driver; flat-fee display, no payouts. |
 | Admin dashboard | Keeps the marketplace operable and demonstrates the operator view. |
 
 ### Nice-to-Have — real, but the product stands without them in a demo
@@ -81,23 +86,23 @@ The lesson for an MVP: **you do not need the courier/logistics layer to credibly
 ### Future — explicitly out, would change the architecture
 | Feature | Why future |
 |---|---|
-| Courier fleet + live GPS | Reintroduces the heaviest subsystems we deliberately removed. |
+| Auto-dispatch + live GPS + surge + zones | The *heavy* logistics layer. Our lightweight self-claim driver intentionally skips all of it; adding it reintroduces the heaviest subsystems. |
 | Real-time push (websockets/SSE) | Conflicts with the no-Redis/no-event-bus guardrail. |
 | Restaurant payouts / settlement | Real financial reconciliation; out of demo scope. |
 | Analytics / BI suite | Beyond a demo's needs. |
 
 ## 1.5 MVP recommendation
 
-**Build the 10 must-haves above and nothing more.** They form one complete, recognizable loop — a customer can discover a restaurant, order and pay, and watch it through to delivery, while restaurants fulfill and admins govern. Everything else is additive and can be layered in later without re-architecting. This is the smallest scope that still *feels* like a real SaaS product, which is exactly the portfolio goal.
+**Build the must-haves above and nothing more.** They form one complete, recognizable loop — a customer discovers a restaurant, orders and pays, the restaurant prepares and marks it ready, a driver claims and delivers it, and admins govern the whole thing. Everything else is additive and can be layered in later without re-architecting. This is the smallest scope that still *feels* like a real SaaS product, which is exactly the portfolio goal. The driver leg stays deliberately lightweight (self-claim, polling, flat fee) so it adds a recognizable 4th side without dragging in dispatch/GPS/surge.
 
 ---
 
 # Phase 2 — Product Definition
 
 ## 2.1 Product Vision
-> **A clean, trustworthy food-ordering marketplace where customers order in a few taps, restaurants manage their orders and menus effortlessly, and a single operator keeps the whole platform healthy — production-quality, without operational over-engineering.**
+> **A clean, trustworthy food-ordering marketplace where customers order in a few taps, restaurants manage their orders and menus effortlessly, drivers pick up and deliver with a couple of clicks, and a single operator keeps the whole platform healthy — production-quality, without operational over-engineering.**
 
-*Reasoning:* the vision deliberately omits logistics/couriers. It centers on the parts that are both high-value and solo-achievable, and the phrase "without operational over-engineering" encodes the user's explicit complexity guardrails.
+*Reasoning:* the vision includes a delivery leg but deliberately omits *heavy* logistics (dispatch/GPS/surge). It centers on the parts that are both high-value and solo-achievable, and the phrase "without operational over-engineering" encodes the user's explicit complexity guardrails.
 
 ## 2.2 Product Goals
 1. **Demonstrate an end-to-end marketplace transaction** (browse → pay → fulfill → deliver). *Why:* this is the single most important thing a reviewer/recruiter looks for.
@@ -108,23 +113,27 @@ The lesson for an MVP: **you do not need the courier/logistics layer to credibly
 ## 2.3 Target Users
 - **Customers:** people ordering food for delivery.
 - **Restaurant owners/staff:** small/medium restaurants managing their own menu and orders.
+- **Drivers:** approved delivery people who claim ready orders and carry them to the customer.
 - **Platform admin:** the operator (in a demo, the developer) curating supply and overseeing operations.
 
 ## 2.4 Primary Use Cases
 1. Customer discovers a restaurant, orders, pays, and tracks to delivery.
-2. Restaurant onboards, builds a menu, and fulfills incoming orders.
-3. Admin approves a new restaurant and monitors platform orders.
+2. Restaurant onboards, builds a menu, and fulfills incoming orders through `READY`.
+3. Driver onboards, gets approved, claims a ready order, and delivers it.
+4. Admin approves a new restaurant/driver and monitors platform orders.
 
 ## 2.5 User Personas
 - **Maya — the Hungry Customer (28, urban professional).** Wants to order dinner fast, see honest status, pay securely. Frustrated by clunky carts and unclear delivery status. Success = food ordered in under 2 minutes with clear tracking.
-- **Sam — the Restaurant Owner (40, runs a 1-location eatery).** Wants incoming orders in one screen, easy menu edits, and the ability to mark items sold out. Frustrated by complex POS-style tools. Success = accept and progress an order in a couple of clicks.
-- **Riya — the Platform Admin (the operator).** Wants to approve good restaurants, suspend bad ones, and see what's happening across the platform. Success = full visibility and control from one dashboard.
+- **Sam — the Restaurant Owner (40, runs a 1-location eatery).** Wants incoming orders in one screen, easy menu edits, and the ability to mark items sold out. Frustrated by complex POS-style tools. Success = accept and progress an order to `READY` in a couple of clicks.
+- **Dev — the Driver (24, delivers part-time on a bike).** Wants to see what's ready for pickup nearby, grab one, and mark it picked up then delivered without fuss — and see what he's earned. Frustrated by apps that assign him orders he can't do or bury his earnings. Success = claim a ready order and complete it in a couple of taps, with a clear running earnings total. *(Web app on his phone browser — no GPS tracking.)*
+- **Riya — the Platform Admin (the operator).** Wants to approve good restaurants and drivers, suspend bad ones, and see what's happening across the platform. Success = full visibility and control from one dashboard.
 
 ## 2.6 Key Business Flows
-1. **Onboarding flow:** restaurant signs up → submits profile → admin approves → live.
-2. **Ordering flow:** discover → restaurant page → add to cart → checkout → Stripe pay → order placed.
-3. **Fulfillment flow:** restaurant accepts → preparing → out for delivery → delivered (customer sees each step via polling).
-4. **Governance flow:** admin reviews restaurants, manages users, oversees orders.
+1. **Onboarding flow:** restaurant (or driver) signs up → submits profile → admin approves → live.
+2. **Ordering flow:** discover → restaurant page → add to cart → checkout (incl. delivery fee) → Stripe pay → order placed.
+3. **Fulfillment flow:** restaurant accepts → preparing → **ready** (customer sees each step via polling).
+4. **Delivery flow:** ready order enters the shared pool → driver claims it (→ out for delivery) → driver marks delivered; driver's earnings tally updates.
+5. **Governance flow:** admin reviews restaurants and drivers, manages users, oversees orders.
 
 ## 2.7 Success Metrics (demo-appropriate)
 - **Functional completeness:** 100% of the must-have loop works end-to-end.
@@ -147,12 +156,15 @@ The lesson for an MVP: **you do not need the courier/logistics layer to credibly
 | **Checkout & Payment** | Address + Stripe pay + place order | Revenue event | Pay securely | Cart, Auth, Stripe | High | **Must** |
 | **Order Lifecycle** | State machine + status events | Operational core | Order actually progresses | Checkout | High | **Must** |
 | **Order Tracking & History** | Status polling + past orders | Trust/retention | Know what's happening | Order lifecycle | Low–Med | **Must** |
-| **Restaurant Dashboard** | Incoming queue + status control + menu | Fulfillment | Run the business | Orders, Menu | Med–High | **Must** |
-| **Admin Dashboard** | Manage restaurants/users/orders + metrics | Governance | Operate the platform | All above | Medium | **Must** |
+| **Restaurant Dashboard** | Incoming queue + status control (to `READY`) + menu | Fulfillment | Run the business | Orders, Menu | Med–High | **Must** |
+| **Driver Onboarding** | Driver signup + admin approval | Delivery supply | Drivers can join | Auth, Admin | Medium | **Must** |
+| **Driver Delivery** | Pickup pool of `READY` orders, claim, mark picked up/delivered | Completes the delivery leg | Earn by delivering | Order lifecycle | Medium | **Must** |
+| **Driver Earnings** | Tally of completed deliveries + summed fees | Driver retention | See what I earned | Driver Delivery | Low | **Must** |
+| **Admin Dashboard** | Manage restaurants/drivers/users/orders + metrics | Governance | Operate the platform | All above | Medium | **Must** |
 | Ratings & Reviews | Feedback + ranking | Trust/quality | Pick good food | Orders | Medium | Nice |
 | Promo Codes | Discounts/growth | Acquisition | Save money | Checkout | Medium | Nice |
 | Favorites / Re-order | Convenience | Retention | Faster repeat orders | Orders | Low | Nice |
-| Courier Fleet + GPS | Logistics | Scale delivery | Live tracking | New role + infra | Very High | Future |
+| Auto-dispatch + GPS + Surge | Heavy logistics | Scale delivery | Live tracking | Maps + realtime infra | Very High | Future |
 | Real-time Push | Instant updates | UX polish | No refresh | Infra | High | Future |
 
 *Modules were derived by walking each business flow in 2.6 and asking "what capability must exist for this step to happen?" — not assumed from a template.*
@@ -162,30 +174,34 @@ The lesson for an MVP: **you do not need the courier/logistics layer to credibly
 # Phase 4 — Information Architecture
 
 ## 4.1 Application structure
-A **single Next.js App Router application** with three role-scoped **route groups** plus an API layer. One app (not three) is correct for a solo dev: shared components, one deploy, one database, one auth config — while middleware still enforces hard role boundaries.
+A **single Next.js App Router application** with four role-scoped **route groups** plus an API layer. One app (not four) is correct for a solo dev: shared components, one deploy, one database, one auth config — while the route guard still enforces hard role boundaries.
 
 ```
 /                      → marketing/landing + redirect to discovery
 /(customer)            → browse, restaurant detail, cart, checkout, orders
 /(restaurant)          → restaurant dashboard (orders queue, menu mgmt, profile)
-/(admin)               → admin dashboard (restaurants, users, orders, metrics)
-/api/...               → route handlers (Stripe webhook, mutations as needed)
+/(driver)              → driver app (pickup pool, my active delivery, earnings)
+/(admin)               → admin dashboard (restaurants, drivers, users, orders, metrics)
+/api/...               → route handlers (Stripe webhook, polled JSON for pool/queue)
 ```
 
 ## 4.2 Navigation hierarchy
 - **Customer:** Home/Discovery → Restaurant Detail → Cart → Checkout → Order Tracking → Order History. Persistent top nav: logo, search, cart, account.
 - **Restaurant:** Dashboard sidebar — Orders (default), Menu, Profile/Hours.
-- **Admin:** Dashboard sidebar — Overview/Metrics, Restaurants (approvals), Users, Orders.
+- **Driver:** Mobile-browser app — Pickup Pool (default), My Active Delivery, Earnings. (No GPS/map.)
+- **Admin:** Dashboard sidebar — Overview/Metrics, Restaurants (approvals), Drivers (approvals), Users, Orders.
 
 ## 4.3 User journeys (happy paths)
-1. **Customer:** Land → search "pizza" → open restaurant → add 2 items → cart → checkout → Stripe test pay → see "Placed" → watch status advance → "Delivered".
-2. **Restaurant:** Login → Orders tab shows new "Placed" order → Accept → Preparing → Out for Delivery → Delivered.
-3. **Admin:** Login → Restaurants → see "Pending" applicant → review profile → Approve → restaurant now visible to customers.
+1. **Customer:** Land → search "pizza" → open restaurant → add 2 items → cart → checkout (sees delivery fee) → Stripe test pay → see "Placed" → watch status advance → "Delivered".
+2. **Restaurant:** Login → Orders tab shows new "Placed" order → Accept → Preparing → Ready (handoff to driver pool).
+3. **Driver:** Login (approved) → Pickup Pool shows a "Ready" order → Claim → Picked up → Delivered → Earnings tally updates.
+4. **Admin:** Login → Restaurants → see "Pending" applicant → review profile → Approve → restaurant now visible to customers. (Same flow for Drivers.)
 
 ## 4.4 Screen inventory
 **Customer (6):** Discovery/Home · Restaurant Detail · Cart · Checkout · Order Tracking · Order History.
 **Restaurant (4):** Orders Queue · Order Detail · Menu Manager · Profile/Hours.
-**Admin (4):** Overview/Metrics · Restaurants (list + approve/suspend) · Users · Orders (all).
+**Driver (3):** Pickup Pool · My Active Delivery · Earnings.
+**Admin (5):** Overview/Metrics · Restaurants (list + approve/suspend) · Drivers (list + approve/suspend) · Users · Orders (all).
 **Shared/auth (3):** Sign in · Sign up (role-aware) · Account/Settings.
 
 ## 4.5 Dashboard layouts
@@ -206,39 +222,45 @@ We derive entities by walking the business processes, not by guessing tables.
 ## 5.1 Entity-by-entity reasoning
 - **User** — every actor needs identity + a `role`. *Exists because* all access is role-scoped.
 - **Restaurant** — the supply unit; owned by a User; has a `status` (PENDING/APPROVED/SUSPENDED). *Exists because* onboarding + approval + visibility depend on it.
+- **Driver** — the delivery unit; owned by a User; has a `status` (PENDING/APPROVED/SUSPENDED). *Exists because* a driver must be approved before claiming, and we need somewhere to scope "orders this driver claimed" for earnings. Mirrors `Restaurant`'s approval shape.
 - **MenuCategory** — groups items for a restaurant. *Exists because* menus are organized, and discovery/detail render by category.
 - **MenuItem** — the sellable unit; price, description, image, `isAvailable`. *Exists because* you can't order what isn't modeled; availability toggle avoids deleting sold-out items.
 - **Address** — where to deliver. *Exists because* checkout needs a destination; snapshotted onto the order.
-- **Order** — the transaction; links customer + restaurant, holds `status`, totals, `paymentStatus`, delivery address snapshot. *Exists because* it's the central record everything revolves around.
-- **OrderItem** — line items with **price/name snapshot at purchase time**. *Exists because* later menu edits must not retroactively change what a customer paid (financial correctness).
+- **Order** — the transaction; links customer + restaurant + (once claimed) **driver**, holds `status`, totals incl. **`deliveryFeeCents` snapshot**, `paymentStatus`, delivery address snapshot. *Exists because* it's the central record everything revolves around. A nullable `driverId` records who claimed it (null while still in the pool).
+- **OrderItem** — line items with **price/name snapshot at purchase time**. *Exists because* later menu edits must not retroactively change what a customer paid (financial correctness). *(The delivery fee is snapshotted on the Order, not per item.)*
 - **Payment** — Stripe session/intent id + `status`. *Exists because* payment state is distinct from order state and is confirmed asynchronously by a webhook.
 - **OrderStatusEvent** — append-only log of status transitions (from, to, at, byUserId). *Exists because* it powers the customer's tracking timeline and gives an audit trail — and supports the polling model cleanly.
 
 ## 5.2 Relationships (ERD in words)
 - `User (1) ── (0..1) Restaurant` — a restaurant owner owns one restaurant. *(Customers/admins own none.)*
+- `User (1) ── (0..1) Driver` — a driver user owns one driver profile. *(Others own none.)*
 - `Restaurant (1) ── (N) MenuCategory (1) ── (N) MenuItem`
 - `User[customer] (1) ── (N) Address`
 - `User[customer] (1) ── (N) Order (N) ── (1) Restaurant`
+- `Driver (1) ── (N) Order` — a driver claims many orders over time; an order has at most one driver (nullable until claimed).
 - `Order (1) ── (N) OrderItem`
 - `Order (1) ── (1) Payment`
 - `Order (1) ── (N) OrderStatusEvent`
 
 ## 5.3 Ownership rules
 - A restaurant's menu (categories/items) and its orders are editable **only** by its owner or an admin.
-- An order's status may be advanced **only** by the owning restaurant or an admin.
+- The restaurant leg of status (`ACCEPT/REJECT/PREPARING/READY`) may be advanced **only** by the owning restaurant or an admin.
+- The delivery leg (`OUT_FOR_DELIVERY` on claim, then `DELIVERED`) may be advanced **only** by the driver who claimed the order (or an admin). A driver may claim a `READY` order only if it is unclaimed; claiming sets `driverId` to that driver. A driver may read/act on **only** orders they have claimed.
 - A customer may read/cancel **only their own** orders (cancel only before `ACCEPTED`).
-- Customers see **only APPROVED** restaurants.
+- Customers see **only APPROVED** restaurants; only **APPROVED** drivers may claim orders.
 
 ## 5.4 Lifecycle states
 - **Restaurant:** `PENDING → APPROVED → SUSPENDED` (and back to APPROVED).
-- **Order:** `PLACED → ACCEPTED → PREPARING → OUT_FOR_DELIVERY → DELIVERED`; branches `PLACED → REJECTED` (restaurant) and `PLACED → CANCELLED` (customer/admin, pre-acceptance).
+- **Driver:** `PENDING → APPROVED → SUSPENDED` (and back to APPROVED) — same shape as Restaurant.
+- **Order:** `PLACED → ACCEPTED → PREPARING → READY → OUT_FOR_DELIVERY → DELIVERED`; branches `PLACED → REJECTED` (restaurant) and `PLACED → CANCELLED` (customer/admin, pre-acceptance). `READY → OUT_FOR_DELIVERY` happens when a driver claims; both delivery-leg transitions are driver-driven.
 - **Payment:** `PENDING → PAID` (or `FAILED`). Order is only shown to the restaurant queue once `Payment = PAID`.
 
 ## 5.5 Schema recommendation (Prisma sketch)
 ```prisma
-enum Role { CUSTOMER RESTAURANT ADMIN }
+enum Role { CUSTOMER RESTAURANT DRIVER ADMIN }
 enum RestaurantStatus { PENDING APPROVED SUSPENDED }
-enum OrderStatus { PLACED ACCEPTED PREPARING OUT_FOR_DELIVERY DELIVERED REJECTED CANCELLED }
+enum DriverStatus { PENDING APPROVED SUSPENDED }
+enum OrderStatus { PLACED ACCEPTED PREPARING READY OUT_FOR_DELIVERY DELIVERED REJECTED CANCELLED }
 enum PaymentStatus { PENDING PAID FAILED }
 
 model User {
@@ -247,6 +269,7 @@ model User {
   name        String?
   role        Role     @default(CUSTOMER)
   restaurant  Restaurant?
+  driver      Driver?
   addresses   Address[]
   orders      Order[]   @relation("CustomerOrders")
   createdAt   DateTime @default(now())
@@ -264,6 +287,17 @@ model Restaurant {
   categories MenuCategory[]
   orders     Order[]
   createdAt  DateTime         @default(now())
+}
+
+model Driver {
+  id         String       @id @default(cuid())
+  userId     String       @unique
+  user       User         @relation(fields: [userId], references: [id])
+  name       String
+  phone      String?
+  status     DriverStatus @default(PENDING)
+  orders     Order[]      // orders this driver has claimed
+  createdAt  DateTime     @default(now())
 }
 
 model MenuCategory {
@@ -301,6 +335,8 @@ model Order {
   customer      User          @relation("CustomerOrders", fields: [customerId], references: [id])
   restaurantId  String
   restaurant    Restaurant    @relation(fields: [restaurantId], references: [id])
+  driverId      String?       // null until a driver claims the READY order
+  driver        Driver?       @relation(fields: [driverId], references: [id])
   status        OrderStatus   @default(PLACED)
   subtotalCents Int
   deliveryFeeCents Int        @default(0)
@@ -352,7 +388,8 @@ app/
   (marketing)/page.tsx
   (customer)/...        // discovery, restaurant/[id], cart, checkout, orders
   (restaurant)/...      // dashboard, menu, profile
-  (admin)/...           // restaurants, users, orders, overview
+  (driver)/...          // pickup pool, my active delivery, earnings
+  (admin)/...           // restaurants, drivers, users, orders, overview
   api/
     stripe/webhook/route.ts
     ...                 // route handlers where Server Actions don't fit
@@ -388,8 +425,8 @@ Prefer Server Actions; expose Route Handlers only for (a) Stripe webhook and (b)
 **Auth.js / NextAuth** with database sessions or JWT carrying `role`. Email/password (or a dev OAuth provider) is sufficient for a demo. Role is set at sign-up (customer vs restaurant); admin is seeded.
 
 ## 6.6 Authorization strategy
-- **`middleware.ts`** guards route groups: `/(restaurant)` requires `RESTAURANT`, `/(admin)` requires `ADMIN`.
-- **Per-action checks** in Server Actions re-verify ownership (a restaurant can only mutate its own data) — never trust the route guard alone.
+- The **route guard** guards route groups: `/(restaurant)` requires `RESTAURANT`, `/(driver)` requires `DRIVER`, `/(admin)` requires `ADMIN`.
+- **Per-action checks** in Server Actions re-verify ownership — a restaurant only mutates its own data; a driver only acts on orders **they claimed** (and may claim only unclaimed `READY` orders, only if `APPROVED`). Never trust the route guard alone.
 
 ## 6.7 State management
 Server Components for server state; React context + localStorage for the cart; SWR for polled views. No Redux/Zustand — unjustified at this scale.
@@ -402,7 +439,7 @@ Server Components for server state; React context + localStorage for the cart; S
 # Phase 7 — Product Requirements Document (PRD)
 
 ## 7.1 Executive Summary
-A solo-buildable, three-sided food delivery marketplace. Customers discover restaurants, order and pay (Stripe test mode), and track orders to delivery; restaurants fulfill orders and manage menus; an admin governs the platform. Delivery is restaurant-fulfilled (no courier logistics), and updates use polling — deliberate choices that keep the system production-looking yet free of heavy infrastructure.
+A solo-buildable, four-sided food delivery marketplace. Customers discover restaurants, order and pay (Stripe test mode), and track orders to delivery; restaurants fulfill orders (through `READY`) and manage menus; approved drivers self-claim ready orders from a shared pool and deliver them; an admin governs the platform. Delivery is **lightweight in-house** — no auto-dispatch, no GPS, no surge — and updates use polling. These are deliberate choices that keep the system production-looking yet free of heavy infrastructure.
 
 ## 7.2 Product Vision
 *See 2.1.* A clean, trustworthy marketplace that nails the core order loop without operational over-engineering.
@@ -411,12 +448,12 @@ A solo-buildable, three-sided food delivery marketplace. Customers discover rest
 *See 2.2.* End-to-end transaction · clean role architecture · solo-maintainable · production-grade polish.
 
 ## 7.4 User Personas
-*See 2.5.* Maya (customer), Sam (restaurant owner), Riya (admin).
+*See 2.5.* Maya (customer), Sam (restaurant owner), Dev (driver), Riya (admin).
 
 ## 7.5 Functional Requirements
 **Auth & Roles**
-- FR-1 Users can sign up as customer or restaurant; admin is seeded.
-- FR-2 Sessions carry a role; route groups are role-guarded.
+- FR-1 Users can sign up as customer, restaurant, or driver; admin is seeded.
+- FR-2 Sessions carry a role; route groups are role-guarded (`customer / restaurant / driver / admin`).
 
 **Restaurant Onboarding & Menu**
 - FR-3 A restaurant user can create/edit its profile (name, cuisine, hours, delivery area).
@@ -428,35 +465,47 @@ A solo-buildable, three-sided food delivery marketplace. Customers discover rest
 - FR-7 A restaurant detail page lists available items by category.
 - FR-8 Customers add items to a **single-restaurant** cart; adding from another restaurant warns/clears.
 
+**Driver Onboarding**
+- FR-D1 A user can sign up/submit a driver profile; the driver is created `PENDING`.
+- FR-D2 A `PENDING` or `SUSPENDED` driver cannot claim orders; only an `APPROVED` driver can.
+
 **Checkout & Payment**
-- FR-9 Checkout collects a delivery address and shows an order summary with totals.
+- FR-9 Checkout collects a delivery address and shows an order summary with totals, including a flat **delivery fee** line; `totalCents = subtotalCents + deliveryFeeCents`.
 - FR-10 Payment uses Stripe test-mode Checkout; on success the webhook flips `Payment` to `PAID`.
 - FR-11 An order is created at `PLACED` and only appears in the restaurant queue once `PAID`.
 
 **Order Lifecycle & Tracking**
-- FR-12 Restaurant can `ACCEPT` or `REJECT` a `PLACED` order; then advance `PREPARING → OUT_FOR_DELIVERY → DELIVERED`.
-- FR-13 Illegal transitions are rejected by the central state machine.
-- FR-14 Every transition writes an `OrderStatusEvent`.
-- FR-15 Customers see live status (polled) and a tracking timeline; can cancel only before `ACCEPTED`.
+- FR-12 Restaurant can `ACCEPT` or `REJECT` a `PLACED` order; then advance `PREPARING → READY`. The restaurant does **not** mark `OUT_FOR_DELIVERY` or `DELIVERED` — those are driver-only.
+- FR-13 Illegal transitions are rejected by the central state machine (e.g. `READY → DELIVERED` skipping pickup, or a restaurant attempting `DELIVERED`).
+- FR-14 Every transition writes an `OrderStatusEvent` (including driver claim and delivery).
+- FR-15 Customers see live status (polled) and a tracking timeline (incl. "driver picked up your order"); can cancel only before `ACCEPTED`.
 - FR-16 Customers have an order history list + detail.
 
+**Driver Delivery**
+- FR-D3 An `APPROVED` driver sees a pickup pool: `READY` orders with no `driverId` yet (polled via SWR).
+- FR-D4 A driver can claim an unclaimed `READY` order; claiming atomically sets `driverId` to that driver and transitions `READY → OUT_FOR_DELIVERY`. A second driver claiming the same order is a no-op/fails (already claimed).
+- FR-D5 The claiming driver can mark `OUT_FOR_DELIVERY → DELIVERED`. No other driver can.
+- FR-D6 A driver sees only orders **they** claimed (active + history) and an earnings tally: count of their `DELIVERED` orders and the summed `deliveryFeeCents`.
+
 **Admin**
-- FR-17 Admin can approve/suspend restaurants, view/manage users, and view all orders.
-- FR-18 Admin overview shows basic metrics (restaurants, orders today, test revenue total).
+- FR-17 Admin can approve/suspend restaurants **and drivers**, view/manage users, and view all orders.
+- FR-18 Admin overview shows basic metrics (restaurants, drivers, orders today, test revenue total).
 
 ## 7.6 User Flows
 *See 2.6 and 4.3.* Onboarding, ordering, fulfillment, governance — each walked step by step.
 
 ## 7.7 Information Architecture
-*See Phase 4.* One app, three route groups, 17 screens inventoried.
+*See Phase 4.* One app, four route groups, 21 screens inventoried.
 
 ## 7.8 Business Rules
 - Single-restaurant cart.
-- Order item prices are snapshotted at purchase; later menu edits don't change past orders.
+- Order item prices **and the delivery fee** are snapshotted at purchase; later menu/fee edits don't change past orders.
 - Orders enter the restaurant queue only after payment is `PAID`.
-- Only the owning restaurant or admin may advance an order; only legal transitions allowed.
+- The restaurant (or admin) advances an order only through `READY`; the delivery leg is driver-only.
+- A `READY` order enters a shared pool; the **first** approved driver to claim it owns it (sets `driverId`); others can't claim it.
+- A driver acts only on orders they claimed; only legal transitions allowed.
 - Customers can cancel only before `ACCEPTED`.
-- Only `APPROVED` restaurants are customer-visible.
+- Only `APPROVED` restaurants are customer-visible; only `APPROVED` drivers may claim orders.
 
 ## 7.9 Data Model
 *See Phase 5* for entities, relationships, lifecycle states, and the Prisma schema.
@@ -465,19 +514,20 @@ A solo-buildable, three-sided food delivery marketplace. Customers discover rest
 *See Phase 6.* Next.js App Router (single app, route groups), Server Actions + minimal Route Handlers, Prisma/Postgres, NextAuth roles, Stripe test webhook, SWR polling, Vercel deploy.
 
 ## 7.11 MVP Scope
-The 10 must-have modules (Phase 1.4 / Phase 3). Nothing else.
+The must-have modules (Phase 1.4 / Phase 3), now including the lightweight driver leg (onboarding, pickup pool + status, earnings tally). Nothing else.
 
 ## 7.12 Future Scope
-Ratings/reviews, promo codes, favorites/re-order, multi-address, courier fleet + GPS, real-time push, payouts/settlement, analytics.
+Ratings/reviews, promo codes, favorites/re-order, multi-address, **heavy logistics (auto-dispatch + live GPS + surge + serviceability zones)**, real-time push, driver payouts/settlement (Stripe Connect), analytics.
 
 ## 7.13 Risks
 | Risk | Impact | Mitigation |
 |---|---|---|
 | Stripe webhook misconfig in prod | Orders stuck `PENDING` | Test webhook locally with Stripe CLI; add a manual admin "mark paid" fallback for the demo. |
 | Polling feels laggy | Weaker UX impression | Short poll interval on active orders only; show optimistic status on action. |
-| Scope creep into couriers/real-time | Blows the solo budget | Treat as Future Scope; guard the line in reviews. |
-| Role authZ gaps | Cross-tenant data access | Re-check ownership in every Server Action, not just middleware. |
-| Money rounding bugs | Wrong totals | Store integer cents everywhere. |
+| Scope creep into heavy logistics (dispatch/GPS/surge) | Blows the solo budget | Keep drivers lightweight (self-claim, polling); treat heavy logistics as Future Scope; guard the line in reviews. |
+| Two drivers claim the same order | Double-assignment / wrong `driverId` | Claim with a conditional update (`updateMany where status=READY AND driverId=null`); if it affects 0 rows, the order was already taken — show "already claimed". |
+| Role authZ gaps | Cross-tenant data access | Re-check ownership in every Server Action (incl. driver-claimed-this-order), not just the route guard. |
+| Money rounding bugs | Wrong totals | Store integer cents everywhere (incl. `deliveryFeeCents`). |
 
 ## 7.14 Assumptions
 - Single currency, single region for the demo.
@@ -490,24 +540,26 @@ Ratings/reviews, promo codes, favorites/re-order, multi-address, courier fleet +
 *See Phase 8.* Six milestones, dependency-ordered.
 
 ## 7.16 Acceptance Criteria (MVP "done")
-- AC-1 A customer can complete discover → pay (Stripe test) → track → see `DELIVERED` with no manual DB edits.
-- AC-2 A restaurant can onboard, get approved, build a menu, and progress an order through all states.
-- AC-3 An admin can approve a restaurant and see it become customer-visible.
+- AC-1 A customer can complete discover → pay (Stripe test) → track → see `DELIVERED` (delivered by a driver) with no manual DB edits.
+- AC-2 A restaurant can onboard, get approved, build a menu, and progress an order through to `READY`.
+- AC-3 An admin can approve a restaurant and see it become customer-visible, and approve a driver so it can claim orders.
 - AC-4 No role can open another role's screens or mutate another's data.
-- AC-5 Illegal order transitions are blocked.
+- AC-5 Illegal order transitions are blocked (incl. a restaurant attempting `DELIVERED`, or skipping `OUT_FOR_DELIVERY`).
 - AC-6 Paid orders appear in the restaurant queue; unpaid ones do not.
+- AC-7 An approved driver sees `READY` orders in the pool, claims one (→ `OUT_FOR_DELIVERY`), and marks it `DELIVERED`; their earnings tally reflects it.
+- AC-8 A driver sees/acts on only the orders they claimed; a `PENDING`/`SUSPENDED` driver cannot claim; a second driver cannot claim an already-claimed order.
 
 ---
 
 # Phase 8 — Implementation Planning
 
 ## 8.1 Development Milestones (dependency-ordered)
-1. **M1 — Foundation:** Next.js + TS + Tailwind + shadcn/ui, Prisma schema + migration, NextAuth with roles, middleware guards, seeded admin.
-2. **M2 — Supply side:** restaurant onboarding/profile, admin approval, menu CRUD + availability.
+1. **M1 — Foundation:** Next.js + TS + Tailwind + shadcn/ui, Prisma schema + migration, NextAuth with roles (incl. `DRIVER`), route guards, seeded admin.
+2. **M2 — Supply side:** restaurant onboarding/profile + admin approval, menu CRUD + availability, **driver onboarding/profile + admin approval** (reuses the approval pattern).
 3. **M3 — Demand side:** discovery (search/filter), restaurant detail, single-restaurant cart.
-4. **M4 — Money:** checkout, Stripe test Checkout, webhook → `Payment = PAID`, order creation at `PLACED`.
-5. **M5 — Fulfillment:** order state machine, restaurant order queue + transitions, status events, customer tracking (polling) + history.
-6. **M6 — Governance & polish:** admin dashboard (restaurants/users/orders/metrics), QA pass, empty/error states, deploy.
+4. **M4 — Money:** checkout (incl. flat delivery fee), Stripe test Checkout, webhook → `Payment = PAID`, order creation at `PLACED`.
+5. **M5 — Fulfillment & Delivery:** order state machine (incl. `READY`), restaurant queue + transitions (to `READY`), status events, **driver pickup pool + claim + delivery transitions + earnings tally**, customer tracking (polling) + history.
+6. **M6 — Governance & polish:** admin dashboard (restaurants/drivers/users/orders/metrics), QA pass, empty/error states, deploy.
 
 ## 8.2 Sprint Breakdown (assume ~1-week sprints, solo)
 - **Sprint 1:** M1 + start M2 (auth, schema, restaurant profile, approval).
@@ -523,10 +575,11 @@ Ratings/reviews, promo codes, favorites/re-order, multi-address, courier fleet +
 - **EPIC-5 Checkout & Payments**
 - **EPIC-6 Order Lifecycle & Tracking**
 - **EPIC-7 Admin Dashboard**
+- **EPIC-8 Driver Onboarding & Delivery**
 
 ## 8.4 JIRA Stories (representative, with acceptance criteria)
 **EPIC-1**
-- FD-1 *As a user, I can sign up choosing customer or restaurant.* AC: role persisted; redirected to the right home.
+- FD-1 *As a user, I can sign up choosing customer, restaurant, or driver.* AC: role persisted; redirected to the right home.
 - FD-2 *As any user, I'm blocked from other roles' areas.* AC: middleware redirects; Server Actions re-check ownership.
 
 **EPIC-2**
@@ -546,22 +599,30 @@ Ratings/reviews, promo codes, favorites/re-order, multi-address, courier fleet +
 - FD-41 *As a system, unpaid orders don't reach the restaurant queue.* AC: queue filters on `PAID`.
 
 **EPIC-6**
-- FD-50 *As a restaurant, I can accept/reject and advance an order.* AC: only legal transitions; event logged.
-- FD-51 *As a customer, I can track status and cancel before acceptance.* AC: polled timeline; cancel disabled after `ACCEPTED`.
+- FD-50 *As a restaurant, I can accept/reject and advance an order to `READY`.* AC: only legal transitions; restaurant cannot mark `OUT_FOR_DELIVERY`/`DELIVERED`; event logged.
+- FD-51 *As a customer, I can track status and cancel before acceptance.* AC: polled timeline (incl. driver pickup); cancel disabled after `ACCEPTED`.
 - FD-52 *As a customer, I can view order history.* AC: list + detail for my orders only.
 
 **EPIC-7**
 - FD-60 *As an admin, I can view all orders and platform metrics.* AC: overview cards + tables render.
+- FD-61 *As an admin, I can approve/suspend a driver.* AC: status flips; only `APPROVED` drivers can claim.
+
+**EPIC-8**
+- FD-70 *As a driver, I can submit my profile and get approved.* AC: created `PENDING`; cannot claim until admin `APPROVES`.
+- FD-71 *As an approved driver, I see a pool of `READY`, unclaimed orders.* AC: polled list; excludes claimed/non-ready orders.
+- FD-72 *As a driver, I can claim a ready order.* AC: atomic claim sets `driverId` + `OUT_FOR_DELIVERY`; a second claimer gets "already claimed".
+- FD-73 *As a driver, I can mark my order delivered.* AC: only the claiming driver; `OUT_FOR_DELIVERY → DELIVERED`; event logged.
+- FD-74 *As a driver, I can see my earnings.* AC: count of my `DELIVERED` orders + summed `deliveryFeeCents`; my orders only.
 
 ## 8.5 Recommended Build Order (critical path)
-`Auth/roles → DB schema → restaurant profile + admin approval → menu CRUD → discovery + cart → checkout + Stripe webhook → order state machine → restaurant queue → customer tracking/history → admin dashboard → QA/polish/deploy.`
+`Auth/roles → DB schema → restaurant profile + admin approval → driver profile + admin approval → menu CRUD → discovery + cart → checkout (+ delivery fee) + Stripe webhook → order state machine (incl. READY) → restaurant queue → driver pickup pool + claim/deliver + earnings → customer tracking/history → admin dashboard → QA/polish/deploy.`
 
-*Rationale:* nothing is built before the data and identity it depends on. Payments precede the lifecycle because the queue gates on `PAID`. Admin dashboard comes last because it observes everything else.
+*Rationale:* nothing is built before the data and identity it depends on. Driver onboarding reuses the restaurant-approval pattern, so it slots in alongside it. The driver pickup pool depends on the order state machine reaching `READY`, so it follows the restaurant queue. Payments precede the lifecycle because the queue gates on `PAID`. Admin dashboard comes last because it observes everything else.
 
 ---
 
 ## Testing & QA notes (for the build phase)
-- **E2E (Playwright):** the three happy-path journeys (customer order, restaurant fulfillment, admin approval) + role-isolation negative tests. *Does NOT cover:* Stripe's own UI, real payment networks, or load.
-- **Deterministic data:** seed script for admin + sample restaurants/menus; no fixed sleeps — wait on status text/elements.
-- **Unit:** the order state machine (legal/illegal transitions) and money math.
-- **Not covered by this document:** real courier logistics, real-time push, multi-region, and production payment compliance — all Future Scope.
+- **E2E (Playwright):** the happy-path journeys (customer order, restaurant fulfillment to `READY`, **driver claim → deliver**, admin approval of restaurant + driver) + role-isolation negative tests (a driver can't touch an order they didn't claim; a second driver can't claim a taken order). *Does NOT cover:* Stripe's own UI, real payment networks, or load.
+- **Deterministic data:** seed script for admin + sample restaurants/menus + **an approved driver and a `READY` order in the pool**; no fixed sleeps — wait on status text/elements.
+- **Unit:** the order state machine (legal/illegal transitions, incl. `READY` and driver-only delivery leg), the **atomic claim** (second claim is a no-op), and money math (incl. delivery fee in totals/earnings).
+- **Not covered by this document:** heavy logistics (auto-dispatch/GPS/surge), real-time push, multi-region, driver payouts/settlement, and production payment compliance — all Future Scope.

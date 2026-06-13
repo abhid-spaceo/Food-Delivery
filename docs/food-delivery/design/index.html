@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QwikBite — Design & Wireframes Index</title>
+<style>
+  :root{
+    --ink:#15141A; --text:#46454F; --muted:#8E8D99; --faint:#B7B6C0;
+    --line:#ECEBF0; --bg:#F6F5F8; --card:#FFFFFF;
+    --brand:#FF3B5C; --brand-dark:#E82E4D; --brand-soft:#FFEDF0; --grad:linear-gradient(135deg,#FF6B81,#FF2E54);
+    --r:18px; --sh:0 12px 34px rgba(20,19,26,.12); --sh-sm:0 2px 10px rgba(20,19,26,.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{color:var(--ink);margin:0;font-weight:800;letter-spacing:-.02em;}
+  .muted{color:var(--muted);} .small{font-size:13px;}
+  .wrap{max-width:1060px;margin:0 auto;padding:54px 24px 90px;}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+  .logo{width:46px;height:46px;border-radius:14px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:24px;box-shadow:0 10px 22px rgba(255,46,84,.35);}
+  .hero{font-size:30px;}
+  .lede{font-size:15.5px;max-width:680px;margin:10px 0 30px;}
+  .sectit{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin:30px 0 14px;}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  .tile{display:block;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--sh-sm);transition:.16s;}
+  .tile:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:#E0DFE8;}
+  .tile .ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:25px;margin-bottom:14px;}
+  .i1{background:linear-gradient(135deg,#FFD3D8,#FF98A6);} .i2{background:linear-gradient(135deg,#FFE0B2,#FFB877);}
+  .i3{background:linear-gradient(135deg,#DBE3FF,#A6B6FF);} .i4{background:linear-gradient(135deg,#D6F3E2,#8BD9AE);}
+  .tile h3{font-size:18px;} .tile .meta{font-size:12px;color:var(--brand-dark);font-weight:800;margin-top:3px;letter-spacing:.02em;}
+  .tile p{font-size:13.5px;margin:9px 0 0;color:var(--text);}
+  .tile .go{margin-top:14px;font-weight:800;color:var(--brand);font-size:13.5px;}
+  .legend{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-top:14px;box-shadow:var(--sh-sm);font-size:13.5px;}
+  .legend b{color:var(--ink);}
+  .legend .sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:middle;margin-right:6px;}
+  .reflist{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .ref{font-size:12.5px;font-weight:700;color:var(--text);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;background:#fff;}
+  .ref:hover{border-color:var(--brand);color:var(--brand-dark);}
+  .pill{font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px;background:var(--brand-soft);color:var(--brand-dark);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><span class="logo">🍔</span><div><h1 class="hero">QwikBite — Design System</h1><span class="pill">High-fidelity · web only · 4 roles</span></div></div>
+  <p class="lede">Clickable high-fidelity website mockups for the QwikBite food-delivery platform. Each role opens as a real website in a browser frame — switch screens from the bar at the top of each file. Customer & Driver are mobile-first responsive web; Restaurant & Admin are desktop web. Derived from <b>PRD.md</b> (lightweight self-claim delivery — no GPS/dispatch/surge).</p>
+
+  <div class="sectit">High-fidelity designs</div>
+  <div class="grid">
+    <a class="tile" href="customer-design.html"><div class="ic i1">🍽</div><h3>Customer</h3><div class="meta">12 screens · responsive web</div><p>Discovery, search, restaurant & menu, cart, Stripe checkout, order placed, live tracking timeline, history, profile, addresses.</p><div class="go">Open customer site →</div></a>
+    <a class="tile" href="restaurant-design.html"><div class="ic i2">🏪</div><h3>Restaurant owner</h3><div class="meta">9 screens · desktop portal</div><p>Login, onboarding/approval, dashboard, live order queue, order detail (→ READY), menu manager, add item, categories, settings.</p><div class="go">Open partner portal →</div></a>
+    <a class="tile" href="driver-design.html"><div class="ic i3">🛵</div><h3>Driver</h3><div class="meta">8 screens · mobile web</div><p>Login, verification status, pickup pool (self-claim), claim detail, active delivery, earnings tally, delivery history, profile.</p><div class="go">Open driver app →</div></a>
+    <a class="tile" href="admin-design.html"><div class="ic i4">🛡️</div><h3>Admin / ops</h3><div class="meta">6 screens · desktop console</div><p>Login, KPI dashboard, restaurant management, driver verification, live order monitor (reassign/cancel), user management.</p><div class="go">Open admin console →</div></a>
+  </div>
+
+  <div class="legend">
+    <b>How to read these:</b> Each file is a self-contained, clickable prototype — no build step, no external assets (food imagery uses emoji). Use the screen-switcher buttons at the top to walk through that role's flow. The browser-window frame is intentional: QwikBite is <b>web-only</b>, so these are websites, not native apps.
+  </div>
+
+</div>
+</body>
+</html>

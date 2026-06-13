@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QwikBite — Admin Console (High-Fidelity)</title>
+<style>
+  :root{
+    --ink:#15141A; --text:#46454F; --muted:#8E8D99; --faint:#B7B6C0;
+    --line:#ECEBF0; --line-soft:#F4F3F7; --bg:#F6F5F8; --card:#FFFFFF;
+    --brand:#FF3B5C; --brand-dark:#E82E4D; --brand-soft:#FFEDF0; --grad:linear-gradient(135deg,#FF6B81,#FF2E54);
+    --ok:#12B886; --ok-soft:#E6F8F1; --warn:#E8890C; --warn-soft:#FDF1DF; --info:#3B82F6; --info-soft:#EAF2FE;
+    --r:16px; --r-sm:12px; --pill:999px; --sh:0 12px 34px rgba(20,19,26,.12); --sh-sm:0 2px 10px rgba(20,19,26,.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#E9E8ED;color:var(--text);font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{color:var(--ink);margin:0;font-weight:800;letter-spacing:-.01em;}
+  .muted{color:var(--muted);} .small{font-size:12.5px;} .tiny{font-size:11px;}
+  .topbar{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:11px 22px;flex-wrap:wrap;}
+  .brandmark{font-weight:900;color:var(--ink);font-size:16px;display:flex;align-items:center;gap:9px;letter-spacing:-.02em;}
+  .brandmark .logo{width:28px;height:28px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:15px;box-shadow:0 4px 10px rgba(255,46,84,.35);}
+  .tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:var(--pill);padding:3px 11px;text-transform:uppercase;letter-spacing:.05em;}
+  .switch{display:flex;gap:6px;flex-wrap:wrap;margin-left:6px;}
+  .sw{border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;padding:6px 12px;border-radius:var(--pill);}
+  .sw:hover{border-color:var(--brand);color:var(--brand-dark);} .sw.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .backlink{font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:var(--pill);padding:6px 13px;font-weight:600;}
+  .stage{padding:26px 22px 90px;}
+  .cap{max-width:1180px;margin:0 auto 12px;font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.03em;}
+  .screen{display:none;} .screen.show{display:block;}
+  .win{width:100%;max-width:1180px;margin:0 auto;background:#fff;border:1px solid #D9D8E0;border-radius:14px;overflow:hidden;box-shadow:var(--sh);}
+  .chrome{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#EFEEF2;border-bottom:1px solid var(--line);}
+  .chrome i{width:12px;height:12px;border-radius:50%;background:#D2D1D9;display:inline-block;}
+  .chrome i:nth-child(1){background:#FF5F57;} .chrome i:nth-child(2){background:#FEBC2E;} .chrome i:nth-child(3){background:#28C840;}
+  .urlbar{flex:1;max-width:560px;margin-left:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--muted);}
+  .web{background:var(--bg);height:760px;overflow:auto;} .web::-webkit-scrollbar{width:9px;} .web::-webkit-scrollbar-thumb{background:#D9D8E0;border-radius:9px;}
+  .portal{display:flex;min-height:760px;}
+  .side{width:230px;background:#15141A;padding:18px 14px;flex:0 0 auto;}
+  .side .b{font-weight:900;color:#fff;font-size:15px;display:flex;align-items:center;gap:9px;padding:6px 10px 16px;}
+  .side .b .logo{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:15px;}
+  .side a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;color:#C9C8D2;font-size:13.5px;font-weight:600;margin-bottom:3px;text-decoration:none;cursor:pointer;}
+  .side a:hover{background:rgba(255,255,255,.07);color:#fff;} .side a.on{background:var(--brand);color:#fff;}
+  .side .grp{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#6F6E78;padding:14px 13px 6px;font-weight:800;}
+  .main{flex:1;padding:24px 28px;overflow:auto;background:var(--bg);}
+  .pagehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;}
+  .row{display:flex;align-items:center;gap:11px;} .between{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .sep{height:1px;background:var(--line);margin:14px 0;}
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-sm);}
+  .kpi .card{padding:18px;} .kpi .n{font-size:26px;font-weight:900;color:var(--ink);margin-top:4px;} .kpi .lab{font-size:12px;color:var(--muted);font-weight:600;}
+  .kpi .d{font-size:11px;font-weight:700;margin-top:6px;} .up{color:var(--ok);} .dn{color:var(--brand-dark);}
+  .btn{border:none;border-radius:var(--pill);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:1px solid var(--line);}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand);} .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok);}
+  .btn.sm{padding:6px 12px;font-size:12px;border-radius:9px;} .btn.danger{color:var(--brand-dark);border-color:#F6C9D2;} .btn.block{display:block;width:100%;text-align:center;}
+  .badge{font-size:11px;font-weight:800;border-radius:var(--pill);padding:4px 11px;display:inline-flex;align-items:center;gap:5px;}
+  .b-brand{background:var(--brand-soft);color:var(--brand-dark);} .b-ok{background:var(--ok-soft);color:var(--ok);} .b-warn{background:var(--warn-soft);color:var(--warn);} .b-info{background:var(--info-soft);color:var(--info);} .b-gray{background:#F1F0F4;color:#6F6E78;}
+  .table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;}
+  .table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line);}
+  .table td{padding:13px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+  .ph-img{display:grid;place-items:center;border-radius:10px;font-size:18px;}
+  .g1{background:linear-gradient(135deg,#FFE0B2,#FFB877);} .g3{background:linear-gradient(135deg,#D6F3E2,#8BD9AE);} .g4{background:linear-gradient(135deg,#DBE3FF,#A6B6FF);} .g5{background:linear-gradient(135deg,#FBE6AE,#F4C552);}
+  .input{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff;font-size:13.5px;color:var(--ink);} .input.ph,.input::placeholder{color:var(--faint);}
+  .lab{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px;display:block;} .fieldgap{margin-bottom:14px;}
+  .searchbar{display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:9px 14px;color:var(--faint);font-size:13px;max-width:300px;}
+  .center-card{max-width:400px;margin:50px auto;}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;} .tabs .t{padding:8px 15px;border-radius:var(--pill);font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);border:1px solid var(--line);background:#fff;} .tabs .t.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="brandmark"><span class="logo">🍔</span> QwikBite</span>
+  <span class="tag">Admin · console</span>
+  <div class="switch" id="switch"></div>
+  <span style="flex:1"></span>
+  <a class="backlink" href="index.html">← All roles</a>
+</header>
+<main class="stage">
+
+  <!-- A1 LOGIN -->
+  <section class="screen show" id="s-login"><div class="cap">A1 · Admin login</div>
+    <div class="win"><div class="chrome"><i></i><i></i><i></i><span class="urlbar">🔒 admin.qwikbite.app/login</span></div>
+      <div class="web"><div style="padding:24px;">
+        <div class="card center-card" style="padding:34px;">
+          <div class="ph-img" style="width:60px;height:60px;border-radius:16px;margin:0 auto 18px;font-size:28px;background:#15141A;">🛡️</div>
+          <h1 style="text-align:center;font-size:23px;">Operations console</h1>
+          <p class="muted" style="text-align:center;margin:7px 0 24px;">Admin access only</p>
+          <div class="fieldgap"><span class="lab">EMAIL</span><input class="input" placeholder="admin@qwikbite.app"></div>
+          <div class="fieldgap"><span class="lab">PASSWORD</span><input class="input" type="password" placeholder="••••••••"></div>
+          <button class="btn primary block">Sign in</button>
+          <p class="tiny muted" style="text-align:center;margin-top:14px;">Admin accounts are seeded — no public signup.</p>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- A2 DASHBOARD -->
+  <section class="screen" id="s-dash"><div class="cap">A2 · Dashboard / KPIs</div>
+    <div class="win"><div class="chrome"><i></i><i></i><i></i><span class="urlbar">🔒 admin.qwikbite.app</span></div>
+      <div class="web"><div class="portal">
+        <aside class="side"><div class="b"><span class="logo">🍔</span> QwikBite Ops</div>
+          <a class="on">📊 Overview</a><a>🏪 Restaurants</a><a>🛵 Drivers</a><a>🧾 Orders</a><a>👤 Users</a>
+        </aside>
+        <div class="main">
+          <div class="pagehead"><div><h1 style="font-size:21px;">Platform overview</h1><p class="small muted" style="margin:3px 0 0;">Friday, 13 June · test data</p></div><span class="badge b-ok">● 6 live orders</span></div>
+          <div class="kpi">
+            <div class="card"><div class="lab">Live orders</div><div class="n">6</div><div class="d up">▲ 2 vs yesterday</div></div>
+            <div class="card"><div class="lab">GMV today (test)</div><div class="n">₹38.4k</div><div class="d up">▲ 12%</div></div>
+            <div class="card"><div class="lab">Active drivers</div><div class="n">9</div><div class="d">of 14 approved</div></div>
+            <div class="card"><div class="lab">Pending approvals</div><div class="n">3</div><div class="d dn">needs action</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="card" style="padding:18px;"><div class="between" style="margin-bottom:12px;"><h3 style="font-size:15px;">Pending approvals</h3><span class="badge b-warn">3</span></div>
+              <div class="between" style="padding:9px 0;border-bottom:1px solid var(--line-soft);"><span class="row" style="gap:10px;"><span class="ph-img g3" style="width:34px;height:34px;">🏪</span> Green Leaf (restaurant)</span><button class="btn sm ok">Review</button></div>
+              <div class="between" style="padding:9px 0;border-bottom:1px solid var(--line-soft);"><span class="row" style="gap:10px;"><span class="ph-img g4" style="width:34px;height:34px;">🛵</span> Ravi T. (driver)</span><button class="btn sm ok">Review</button></div>
+              <div class="between" style="padding:9px 0 0;"><span class="row" style="gap:10px;"><span class="ph-img g1" style="width:34px;height:34px;">🏪</span> Burger Bay (restaurant)</span><button class="btn sm ok">Review</button></div>
+            </div>
+            <div class="card" style="padding:18px;"><div class="between" style="margin-bottom:12px;"><h3 style="font-size:15px;">Orders by state</h3><span class="small muted">now</span></div>
+              <div class="between" style="padding:7px 0;"><span>Placed / Accepted</span><b style="color:var(--ink);">2</b></div>
+              <div class="between" style="padding:7px 0;"><span>Preparing</span><b style="color:var(--ink);">2</b></div>
+              <div class="between" style="padding:7px 0;"><span>Ready · in driver pool</span><b style="color:var(--ink);">1</b></div>
+              <div class="between" style="padding:7px 0;"><span>Out for delivery</span><b style="color:var(--ink);">1</b></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- A3 RESTAURANT MGMT -->
+  <section class="screen" id="s-restaurants"><div class="cap">A3 · Restaurant management (approve / suspend)</div>
+    <div class="win"><div class="chrome"><i></i><i></i><i></i><span class="urlbar">🔒 admin.qwikbite.app/restaurants</span></div>
+      <div class="web"><div class="portal">
+        <aside class="side"><div class="b"><span class="logo">🍔</span> QwikBite Ops</div><a>📊 Overview</a><a class="on">🏪 Restaurants</a><a>🛵 Drivers</a><a>🧾 Orders</a><a>👤 Users</a></aside>
+        <div class="main">
+          <div class="pagehead"><h1 style="font-size:21px;">Restaurants</h1><span class="searchbar">🔍 Search restaurants…</span></div>
+          <div class="tabs"><span class="t on">All · 12</span><span class="t">Pending · 2</span><span class="t">Approved · 9</span><span class="t">Suspended · 1</span></div>
+          <div class="card" style="overflow:hidden;"><table class="table"><thead><tr><th>Restaurant</th><th>Cuisine</th><th>Status</th><th>Orders</th><th>Actions</th></tr></thead><tbody>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g3" style="width:36px;height:36px;">🥗</span><b style="color:var(--ink);">Green Leaf</b></span></td><td>South Indian</td><td><span class="badge b-warn">Pending</span></td><td>—</td><td><div class="row"><button class="btn sm ok">Approve</button><button class="btn sm danger">Reject</button></div></td></tr>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g1" style="width:36px;height:36px;">🍕</span><b style="color:var(--ink);">Margherita & Co.</b></span></td><td>Italian</td><td><span class="badge b-ok">Approved</span></td><td>184</td><td><div class="row"><button class="btn sm">View</button><button class="btn sm danger">Suspend</button></div></td></tr>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g5" style="width:36px;height:36px;">🍛</span><b style="color:var(--ink);">Sultan's Biryani</b></span></td><td>Mughlai</td><td><span class="badge b-ok">Approved</span></td><td>241</td><td><div class="row"><button class="btn sm">View</button><button class="btn sm danger">Suspend</button></div></td></tr>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g4" style="width:36px;height:36px;">🍔</span><b style="color:var(--ink);">Burger Bay</b></span></td><td>American</td><td><span class="badge b-gray">Suspended</span></td><td>57</td><td><div class="row"><button class="btn sm ok">Reinstate</button></div></td></tr>
+          </tbody></table></div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- A4 DRIVER MGMT -->
+  <section class="screen" id="s-drivers"><div class="cap">A4 · Driver management (verify / approve / suspend)</div>
+    <div class="win"><div class="chrome"><i></i><i></i><i></i><span class="urlbar">🔒 admin.qwikbite.app/drivers</span></div>
+      <div class="web"><div class="portal">
+        <aside class="side"><div class="b"><span class="logo">🍔</span> QwikBite Ops</div><a>📊 Overview</a><a>🏪 Restaurants</a><a class="on">🛵 Drivers</a><a>🧾 Orders</a><a>👤 Users</a></aside>
+        <div class="main">
+          <div class="pagehead"><h1 style="font-size:21px;">Drivers</h1><span class="searchbar">🔍 Search drivers…</span></div>
+          <div class="tabs"><span class="t on">All · 14</span><span class="t">Pending · 1</span><span class="t">Approved · 12</span><span class="t">Suspended · 1</span></div>
+          <div class="card" style="overflow:hidden;"><table class="table"><thead><tr><th>Driver</th><th>Vehicle</th><th>Status</th><th>Deliveries</th><th>Actions</th></tr></thead><tbody>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g4" style="width:36px;height:36px;">🛵</span><div><b style="color:var(--ink);">Ravi T.</b><div class="tiny muted">QB-DRV-219 · docs uploaded</div></div></span></td><td>Bike</td><td><span class="badge b-warn">Pending</span></td><td>—</td><td><div class="row"><button class="btn sm ok">Verify & approve</button><button class="btn sm danger">Reject</button></div></td></tr>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g3" style="width:36px;height:36px;">🛵</span><div><b style="color:var(--ink);">Dev Kumar</b><div class="tiny muted">QB-DRV-204</div></div></span></td><td>Bike</td><td><span class="badge b-ok">Approved</span></td><td>42</td><td><div class="row"><button class="btn sm">View</button><button class="btn sm danger">Suspend</button></div></td></tr>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g5" style="width:36px;height:36px;">🛵</span><div><b style="color:var(--ink);">Anita P.</b><div class="tiny muted">QB-DRV-198</div></div></span></td><td>Scooter</td><td><span class="badge b-ok">Approved</span></td><td>67</td><td><div class="row"><button class="btn sm">View</button><button class="btn sm danger">Suspend</button></div></td></tr>
+            <tr><td><span class="row" style="gap:10px;"><span class="ph-img g1" style="width:36px;height:36px;">🛵</span><div><b style="color:var(--ink);">Sam W.</b><div class="tiny muted">QB-DRV-150</div></div></span></td><td>Bike</td><td><span class="badge b-gray">Suspended</span></td><td>12</td><td><div class="row"><button class="btn sm ok">Reinstate</button></div></td></tr>
+          </tbody></table></div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- A5 ORDER MONITOR -->
+  <section class="screen" id="s-orders"><div class="cap">A5 · Live order monitor (+ manual reassign / cancel)</div>
+    <div class="win"><div class="chrome"><i></i><i></i><i></i><span class="urlbar">🔒 admin.qwikbite.app/orders</span></div>
+      <div class="web"><div class="portal">
+        <aside class="side"><div class="b"><span class="logo">🍔</span> QwikBite Ops</div><a>📊 Overview</a><a>🏪 Restaurants</a><a>🛵 Drivers</a><a class="on">🧾 Orders</a><a>👤 Users</a></aside>
+        <div class="main">
+          <div class="pagehead"><h1 style="font-size:21px;">Live orders</h1><span class="small muted">⟳ auto-refresh</span></div>
+          <div class="card" style="overflow:hidden;"><table class="table"><thead><tr><th>Order</th><th>Restaurant</th><th>Customer</th><th>State</th><th>Driver</th><th>Actions</th></tr></thead><tbody>
+            <tr><td><b style="color:var(--ink);">#QB-10428</b><div class="tiny muted">₹608</div></td><td>Margherita & Co.</td><td>Maya S.</td><td><span class="badge b-info">Out for delivery</span></td><td>Dev Kumar</td><td><div class="row"><button class="btn sm">Reassign</button></div></td></tr>
+            <tr><td><b style="color:var(--ink);">#QB-10415</b><div class="tiny muted">₹480</div></td><td>Punjabi Tadka</td><td>Aman R.</td><td><span class="badge b-warn">Ready · in pool</span></td><td><span class="muted">— unclaimed</span></td><td><div class="row"><button class="btn sm">Assign driver</button></div></td></tr>
+            <tr><td><b style="color:var(--ink);">#QB-10431</b><div class="tiny muted">₹260</div></td><td>Wok & Roll</td><td>Neha K.</td><td><span class="badge b-brand">Placed</span></td><td>—</td><td><div class="row"><button class="btn sm danger">Cancel</button></div></td></tr>
+            <tr><td><b style="color:var(--ink);">#QB-10422</b><div class="tiny muted">₹740</div></td><td>Sultan's Biryani</td><td>Imran S.</td><td><span class="badge b-warn">Preparing</span></td><td>—</td><td><div class="row"><button class="btn sm">View</button></div></td></tr>
+          </tbody></table></div>
+          <p class="tiny muted" style="margin-top:12px;">Admin can reassign a driver or cancel — admin overrides are an allowed actor on the delivery leg. (No auto-dispatch engine; assignment is manual / driver self-claim.)</p>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- A12 USERS -->
+  <section class="screen" id="s-users"><div class="cap">A12 · User management</div>
+    <div class="win"><div class="chrome"><i></i><i></i><i></i><span class="urlbar">🔒 admin.qwikbite.app/users</span></div>
+      <div class="web"><div class="portal">
+        <aside class="side"><div class="b"><span class="logo">🍔</span> QwikBite Ops</div><a>📊 Overview</a><a>🏪 Restaurants</a><a>🛵 Drivers</a><a>🧾 Orders</a><a class="on">👤 Users</a></aside>
+        <div class="main">
+          <div class="pagehead"><h1 style="font-size:21px;">Users</h1><span class="searchbar">🔍 Search by name / email…</span></div>
+          <div class="tabs"><span class="t on">All</span><span class="t">Customers</span><span class="t">Restaurants</span><span class="t">Drivers</span><span class="t">Admins</span></div>
+          <div class="card" style="overflow:hidden;"><table class="table"><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+            <tr><td><b style="color:var(--ink);">Maya Sharma</b></td><td>maya@email.com</td><td><span class="badge b-info">Customer</span></td><td><span class="badge b-ok">Active</span></td><td><button class="btn sm danger">Suspend</button></td></tr>
+            <tr><td><b style="color:var(--ink);">Sam (Punjabi Tadka)</b></td><td>owner@punjabitadka.com</td><td><span class="badge b-brand">Restaurant</span></td><td><span class="badge b-ok">Active</span></td><td><button class="btn sm danger">Suspend</button></td></tr>
+            <tr><td><b style="color:var(--ink);">Dev Kumar</b></td><td>dev@email.com</td><td><span class="badge b-warn">Driver</span></td><td><span class="badge b-ok">Active</span></td><td><button class="btn sm danger">Suspend</button></td></tr>
+            <tr><td><b style="color:var(--ink);">Riya (Ops)</b></td><td>admin@qwikbite.app</td><td><span class="badge b-gray">Admin</span></td><td><span class="badge b-ok">Active</span></td><td><span class="muted small">—</span></td></tr>
+          </tbody></table></div>
+          <p class="tiny muted" style="margin-top:12px;">Four fixed roles (Customer / Restaurant / Driver / Admin). No custom RBAC matrix in MVP.</p>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+</main>
+<script>
+  var SCREENS=[['s-login','A1 Login'],['s-dash','A2 Dashboard'],['s-restaurants','A3 Restaurants'],['s-drivers','A4 Drivers'],['s-orders','A5 Order monitor'],['s-users','A12 Users']];
+  var sw=document.getElementById('switch');
+  SCREENS.forEach(function(s,i){var b=document.createElement('button');b.className='sw'+(i===0?' active':'');b.textContent=s[1];b.onclick=function(){show(s[0],b);};sw.appendChild(b);});
+  function show(id,btn){document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('show');});document.getElementById(id).classList.add('show');document.querySelectorAll('.sw').forEach(function(el){el.classList.remove('active');});btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+</script>
+</body>
+</html>
