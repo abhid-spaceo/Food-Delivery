@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QwikBite — Restaurant Owner Wireframes (desktop web portal)</title>
+<style>
+  /* ============ SHARED GREYSCALE WIREFRAME KIT ============ */
+  :root{
+    --ink:#222; --text:#3a3a3a; --muted:#7c7c7c; --faint:#9a9a9a;
+    --line:#cfcfcf; --line-soft:#e2e2e2; --bg:#eeeeee; --panel:#f6f6f6; --card:#ffffff;
+    --accent:#444; --accent-ink:#fff; --fill:#dddddd;
+    --r:10px; --r-sm:6px; --pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{color:var(--ink);margin:0;font-weight:700;}
+  .muted{color:var(--muted);} .faint{color:var(--faint);} .small{font-size:12px;}
+  .wfbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;}
+  .wfbar .mark{font-weight:800;color:var(--ink);font-size:15px;letter-spacing:.02em;display:flex;align-items:center;gap:8px;}
+  .wfbar .mark .sq{width:22px;height:22px;border:2px solid var(--ink);border-radius:6px;display:grid;place-items:center;font-size:12px;}
+  .wfbar .role{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:var(--pill);padding:3px 10px;text-transform:uppercase;letter-spacing:.06em;}
+  .navwrap{display:flex;gap:6px;flex-wrap:wrap;margin-left:6px;}
+  .nav{border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;font-size:12px;padding:5px 11px;border-radius:var(--pill);}
+  .nav:hover{border-color:var(--accent);color:var(--ink);}
+  .nav.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+  .stage{max-width:1180px;margin:0 auto;padding:24px 18px 120px;}
+  .screen{display:none;} .screen.show{display:block;}
+  .scaphead{display:flex;align-items:baseline;gap:12px;margin:6px 2px 16px;flex-wrap:wrap;}
+  .scaphead .num{font-size:11px;font-weight:700;background:var(--ink);color:#fff;border-radius:5px;padding:2px 8px;}
+  .scaphead h2{font-size:17px;}
+  .scaphead .req{font-size:11px;color:var(--muted);border:1px dashed var(--line);border-radius:5px;padding:2px 8px;}
+  .layout{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap;}
+  .notes{flex:1;min-width:240px;max-width:360px;background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:14px 16px;}
+  .notes h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+  .notes ol{margin:0;padding-left:0;list-style:none;counter-reset:c;}
+  .notes ol li{position:relative;padding:0 0 11px 26px;font-size:12.5px;counter-increment:c;}
+  .notes ol li::before{content:counter(c);position:absolute;left:0;top:0;width:18px;height:18px;background:var(--ink);color:#fff;border-radius:50%;font-size:11px;display:grid;place-items:center;font-weight:700;}
+  .notes .rq{display:inline-block;font-size:10.5px;color:#fff;background:var(--accent);border-radius:4px;padding:1px 6px;margin-left:4px;}
+  .notes .assume{font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);margin-top:8px;padding-top:8px;}
+  .ct{display:inline-grid;place-items:center;width:17px;height:17px;background:var(--ink);color:#fff;border-radius:50%;font-size:10.5px;font-weight:700;vertical-align:middle;}
+  /* desktop browser frame */
+  .desktop{width:100%;max-width:1120px;background:#fff;border:2px solid var(--ink);border-radius:12px;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.10);}
+  .desktop .chrome{display:flex;align-items:center;gap:7px;padding:9px 14px;background:#f1f1f1;border-bottom:1px solid var(--line);}
+  .desktop .chrome i{width:11px;height:11px;border-radius:50%;background:#cfcfcf;display:inline-block;}
+  .desktop .chrome .url{margin-left:10px;font-size:11px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 12px;flex:1;max-width:460px;}
+  /* portal */
+  .portal{display:flex;min-height:540px;}
+  .side{width:208px;border-right:1px solid var(--line-soft);background:var(--panel);padding:14px 10px;flex:0 0 auto;}
+  .side .brand{font-weight:800;color:var(--ink);padding:6px 10px 14px;display:flex;gap:8px;align-items:center;font-size:14px;}
+  .side .brand .sq{width:20px;height:20px;border:2px solid var(--ink);border-radius:5px;display:grid;place-items:center;font-size:11px;}
+  .side a{display:block;padding:9px 12px;border-radius:8px;color:var(--text);font-size:13px;margin-bottom:2px;text-decoration:none;}
+  .side a.on{background:var(--ink);color:#fff;font-weight:600;}
+  .side .grp{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:12px 12px 6px;}
+  .main{flex:1;padding:18px 22px;overflow:auto;background:#fff;}
+  .pagehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .kpi .card .n{font-size:22px;font-weight:800;color:var(--ink);}
+  .table{width:100%;border-collapse:collapse;font-size:13px;}
+  .table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);}
+  .table td{padding:11px 10px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+  .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .card{border:1px solid var(--line);border-radius:var(--r);background:#fff;padding:14px;}
+  .btn{border:1px solid var(--line);border-radius:var(--pill);padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--ink);}
+  .btn:hover{border-color:var(--accent);} .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn.sm{padding:5px 11px;font-size:12px;} .btn.block{display:block;width:100%;text-align:center;}
+  .pill{font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:var(--pill);padding:3px 10px;display:inline-flex;align-items:center;gap:5px;color:var(--text);background:#fff;}
+  .pill.solid{background:var(--ink);color:#fff;border-color:var(--ink);} .pill.dash{border-style:dashed;color:var(--muted);}
+  .img{background:var(--fill);border:1px solid var(--line-soft);border-radius:var(--r-sm);display:grid;place-items:center;color:var(--faint);font-size:11px;text-align:center;}
+  .field{margin-bottom:12px;} .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .input{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;background:#fff;font-size:13px;color:var(--text);} .input.ph{color:var(--faint);}
+  .between{display:flex;align-items:center;justify-content:space-between;gap:10px;} .row{display:flex;align-items:center;gap:10px;}
+  .sep{height:1px;background:var(--line-soft);margin:12px 0;}
+  .state{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:3px 9px;display:inline-block;margin-bottom:12px;background:#fff;}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--pill);overflow:hidden;font-size:12px;}
+  .seg span{padding:6px 12px;cursor:pointer;color:var(--muted);} .seg span.on{background:var(--ink);color:#fff;}
+  .toggle{width:38px;height:22px;border-radius:var(--pill);background:var(--ink);position:relative;display:inline-block;}
+  .toggle::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;}
+  .toggle.off{background:#cfcfcf;} .toggle.off::after{left:2px;right:auto;}
+  .veg{width:14px;height:14px;border:1.5px solid #2e7d32;border-radius:3px;display:inline-grid;place-items:center;} .veg::after{content:"";width:7px;height:7px;border-radius:50%;background:#2e7d32;}
+  .nonveg{width:14px;height:14px;border:1.5px solid #8a1c1c;border-radius:3px;display:inline-grid;place-items:center;} .nonveg::after{content:"";width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:7px solid #8a1c1c;}
+  .legendnote{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:14px 16px;margin-bottom:22px;font-size:12.5px;}
+  .legendnote b{color:var(--ink);}
+  .backlink{font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:var(--pill);padding:5px 12px;}
+  .loginwrap{max-width:380px;margin:40px auto;padding:0 20px;}
+</style>
+</head>
+<body>
+
+<header class="wfbar">
+  <span class="mark"><span class="sq">Q</span> QwikBite</span>
+  <span class="role">Restaurant · desktop web</span>
+  <div class="navwrap" id="nav"></div>
+  <span style="flex:1"></span>
+  <a class="backlink" href="index.html">← All roles</a>
+</header>
+
+<main class="stage">
+  <div class="legendnote">
+    <b>Wireframe, not visual design.</b> Greyscale; the one dark-grey is the primary action. Numbered dots <span class="ct">1</span>
+    map to the notes beside each screen with the PRD requirement ID. Restaurant Owner is a <b>desktop web portal</b> (~1280px) —
+    shown in a browser frame with the app's own left sidebar. The restaurant drives an order only to <b>READY</b>; the delivery leg is the driver's.
+  </div>
+
+  <!-- R1 LOGIN -->
+  <section class="screen show" id="s-login">
+    <div class="scaphead"><span class="num">R1</span><h2>Login</h2><span class="req">FR-1 · FR-2</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/login</span></div>
+        <div class="loginwrap">
+          <div class="img" style="width:54px;height:54px;border-radius:12px;margin:0 auto 16px;">logo</div>
+          <h2 style="text-align:center;">Restaurant partner login</h2>
+          <p class="muted small" style="text-align:center;margin:4px 0 22px;">Manage your menu & orders</p>
+          <div class="field"><label>Email <span class="ct">1</span></label><div class="input ph">owner@restaurant.com</div></div>
+          <div class="field"><label>Password</label><div class="input ph">••••••••</div></div>
+          <button class="btn primary block" style="margin-top:4px;">Sign in</button>
+          <p class="small muted" style="text-align:center;margin-top:14px;">New partner? <b style="color:var(--ink);">Register your restaurant</b></p>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol><li>Email/password (Auth.js); session role = RESTAURANT, route-guarded to <code>/(restaurant)</code>. <span class="rq">FR-2</span></li></ol>
+        <div class="assume">Register link → onboarding form (R2). Admin accounts are seeded, not registered here.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R2 ONBOARDING / APPROVAL -->
+  <section class="screen" id="s-onboard">
+    <div class="scaphead"><span class="num">R2</span><h2>Onboarding + approval status</h2><span class="req">FR-3 · FR-4</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/onboarding</span></div>
+        <div class="main" style="background:var(--panel);">
+          <span class="state">State: PENDING approval <span class="ct">1</span></span>
+          <div class="card" style="margin-bottom:16px;background:#fff;">
+            <div class="between"><div><h3>Your restaurant is under review</h3><p class="small muted" style="margin:4px 0 0;">An admin will approve your profile before it goes live to customers.</p></div><span class="pill dash">PENDING</span></div>
+          </div>
+          <h3 style="font-size:14px;margin-bottom:12px;">Restaurant profile <span class="ct">2</span></h3>
+          <div class="card" style="background:#fff;">
+            <div class="cols3">
+              <div class="field"><label>Restaurant name</label><div class="input">Punjabi Tadka</div></div>
+              <div class="field"><label>Cuisine</label><div class="input">North Indian</div></div>
+              <div class="field"><label>Phone</label><div class="input">+91 98xxxxxx21</div></div>
+            </div>
+            <div class="cols3">
+              <div class="field"><label>Opening hours</label><div class="input">11:00 – 23:00</div></div>
+              <div class="field"><label>Delivery area</label><div class="input">MG Road, 5 km</div></div>
+              <div class="field"><label>Logo</label><div class="img" style="height:38px;">upload</div></div>
+            </div>
+            <button class="btn primary">Save & resubmit</button>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data · states</h4>
+        <ol>
+          <li>New restaurant = <code>PENDING</code>; invisible to customers until an admin APPROVES. <span class="rq">FR-4</span></li>
+          <li>Editable profile: name, cuisine, hours, delivery area. <span class="rq">FR-3</span></li>
+        </ol>
+        <div class="assume">States: PENDING (shown), APPROVED (banner clears, full dashboard unlocked), SUSPENDED (read-only + "contact support").</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R3 DASHBOARD -->
+  <section class="screen" id="s-dash">
+    <div class="scaphead"><span class="num">R3</span><h2>Dashboard</h2><span class="req">§4.5</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant</span></div>
+        <div class="portal">
+          <aside class="side">
+            <div class="brand"><span class="sq">Q</span> Punjabi Tadka</div>
+            <a class="on">Dashboard</a><a>Orders</a><a>Menu</a><a>Categories</a><a>Settings</a>
+            <div class="grp">Store</div>
+            <div style="padding:8px 12px;" class="between"><span class="small">Open <span class="ct">3</span></span><span class="toggle"></span></div>
+          </aside>
+          <div class="main">
+            <div class="pagehead"><h2>Today</h2><span class="pill">13 Jun · Open</span></div>
+            <div class="kpi">
+              <div class="card"><span class="small muted">New orders <span class="ct">1</span></span><div class="n">3</div></div>
+              <div class="card"><span class="small muted">Preparing</span><div class="n">2</div></div>
+              <div class="card"><span class="small muted">Ready</span><div class="n">1</div></div>
+              <div class="card"><span class="small muted">Today's revenue</span><div class="n">₹4,820</div></div>
+            </div>
+            <div class="card">
+              <div class="between" style="margin-bottom:10px;"><h3 style="font-size:14px;">Needs attention <span class="ct">2</span></h3><span class="pill dash">2 new</span></div>
+              <div class="between" style="padding:8px 0;border-bottom:1px solid var(--line-soft);"><span>#QB-10428 · 2 items · ₹530</span><span class="pill solid">New — accept</span></div>
+              <div class="between" style="padding:8px 0;"><span>#QB-10431 · 1 item · ₹260</span><span class="pill solid">New — accept</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>Counts are live (paid orders only — unpaid never appear). <span class="rq">FR-11</span></li>
+          <li>"Needs attention" surfaces newly-PAID orders awaiting accept/reject.</li>
+          <li>Store open/closed toggle (timings live in Settings). <span class="assume" style="display:inline;border:none;padding:0;">Assume.</span></li>
+        </ol>
+        <div class="assume">Revenue = test-mode totals. No deep analytics (out of MVP).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R4 ORDER QUEUE -->
+  <section class="screen" id="s-queue">
+    <div class="scaphead"><span class="num">R4</span><h2>Live order queue</h2><span class="req">FR-11 · FR-12</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/orders</span></div>
+        <div class="portal">
+          <aside class="side">
+            <div class="brand"><span class="sq">Q</span> Punjabi Tadka</div>
+            <a>Dashboard</a><a class="on">Orders</a><a>Menu</a><a>Categories</a><a>Settings</a>
+          </aside>
+          <div class="main">
+            <div class="pagehead"><h2>Orders</h2><span class="small muted">Auto-refreshes (polling) <span class="ct">1</span></span></div>
+            <div class="cols3">
+              <div>
+                <div class="between" style="margin-bottom:8px;"><b style="color:var(--ink);">New</b><span class="pill dash">2</span></div>
+                <div class="card" style="margin-bottom:10px;"><div class="between"><b style="color:var(--ink);">#QB-10428</b><span class="pill">9:41</span></div><p class="small muted" style="margin:4px 0 8px;">2 items · ₹530 · PAID</p><div class="row"><button class="btn sm primary">Accept <span class="ct">2</span></button><button class="btn sm">Reject</button></div></div>
+                <div class="card"><div class="between"><b style="color:var(--ink);">#QB-10431</b><span class="pill">9:46</span></div><p class="small muted" style="margin:4px 0 8px;">1 item · ₹260 · PAID</p><div class="row"><button class="btn sm primary">Accept</button><button class="btn sm">Reject</button></div></div>
+              </div>
+              <div>
+                <div class="between" style="margin-bottom:8px;"><b style="color:var(--ink);">Preparing</b><span class="pill dash">2</span></div>
+                <div class="card" style="margin-bottom:10px;"><div class="between"><b style="color:var(--ink);">#QB-10422</b><span class="pill">9:30</span></div><p class="small muted" style="margin:4px 0 8px;">3 items · ₹740</p><button class="btn sm primary">Mark ready <span class="ct">3</span></button></div>
+                <div class="card"><div class="between"><b style="color:var(--ink);">#QB-10419</b><span class="pill">9:24</span></div><p class="small muted" style="margin:4px 0 8px;">1 item · ₹220</p><button class="btn sm primary">Mark ready</button></div>
+              </div>
+              <div>
+                <div class="between" style="margin-bottom:8px;"><b style="color:var(--ink);">Ready · waiting for driver <span class="ct">4</span></b><span class="pill dash">1</span></div>
+                <div class="card"><div class="between"><b style="color:var(--ink);">#QB-10415</b><span class="pill">9:18</span></div><p class="small muted" style="margin:4px 0 0;">2 items · ₹480 · in driver pool</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>Queue auto-refreshes via SWR polling — no websockets. Only PAID orders show. <span class="rq">FR-11</span></li>
+          <li>Accept / Reject a PLACED order (reject = out of stock / closed). <span class="rq">FR-12</span></li>
+          <li>Advance PREPARING → READY. The restaurant <b>stops at READY</b>. <span class="rq">FR-12</span></li>
+          <li>READY orders leave the restaurant's control and enter the shared driver pool.</li>
+        </ol>
+        <div class="assume">Empty state per column: "No orders". Columns map 1:1 to order states.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R5 ORDER DETAIL -->
+  <section class="screen" id="s-orderdetail">
+    <div class="scaphead"><span class="num">R5</span><h2>Order detail (accept / prep / ready)</h2><span class="req">FR-12 · FR-13 · FR-14</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/orders/QB-10428</span></div>
+        <div class="portal">
+          <aside class="side"><div class="brand"><span class="sq">Q</span> Punjabi Tadka</div><a>Dashboard</a><a class="on">Orders</a><a>Menu</a><a>Categories</a><a>Settings</a></aside>
+          <div class="main">
+            <div class="pagehead"><div><h2>Order #QB-10428</h2><p class="small muted" style="margin:3px 0 0;">Placed 9:41 AM · Maya S. · PAID</p></div><span class="pill solid">New</span></div>
+            <div class="cols3" style="grid-template-columns:1.4fr 1fr;">
+              <div class="card">
+                <h3 style="font-size:13px;margin-bottom:10px;">Items</h3>
+                <div class="between" style="padding:7px 0;border-bottom:1px solid var(--line-soft);"><span><span class="veg"></span> Paneer Butter Masala × 1</span><span>₹220</span></div>
+                <div class="between" style="padding:7px 0;border-bottom:1px solid var(--line-soft);"><span><span class="nonveg"></span> Butter Chicken × 1</span><span>₹280</span></div>
+                <div class="between" style="padding:9px 0 0;"><span class="muted">Delivery fee</span><span>₹30</span></div>
+                <div class="between" style="padding:6px 0 0;font-weight:700;color:var(--ink);"><span>Total</span><span>₹530</span></div>
+              </div>
+              <div class="card">
+                <h3 style="font-size:13px;margin-bottom:10px;">Actions <span class="ct">1</span></h3>
+                <div class="field"><label>Prep time <span class="ct">2</span></label><div class="seg"><span class="on">15 min</span><span>20</span><span>30</span></div></div>
+                <button class="btn primary block" style="margin-bottom:8px;">Accept order</button>
+                <button class="btn block">Reject order</button>
+                <div class="sep"></div>
+                <p class="small muted" style="margin:0;">After accepting: <b style="color:var(--ink);">Preparing → Mark ready</b>. Delivery is handled by a driver. <span class="ct">3</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>Accept/Reject; every action writes an <code>OrderStatusEvent</code>. <span class="rq">FR-14</span></li>
+          <li>Prep time is a hint to the customer timeline. <span class="assume" style="display:inline;border:none;padding:0;">Assume.</span></li>
+          <li>No "Out for delivery"/"Delivered" buttons here — illegal for a restaurant; the state machine blocks it. <span class="rq">FR-13</span></li>
+        </ol>
+        <div class="assume">Reject requires a reason (out of stock / closed) — sets order to REJECTED.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R6 MENU MANAGER -->
+  <section class="screen" id="s-menu">
+    <div class="scaphead"><span class="num">R6</span><h2>Menu manager (+ availability toggle)</h2><span class="req">FR-5 · FR-21</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/menu</span></div>
+        <div class="portal">
+          <aside class="side"><div class="brand"><span class="sq">Q</span> Punjabi Tadka</div><a>Dashboard</a><a>Orders</a><a class="on">Menu</a><a>Categories</a><a>Settings</a></aside>
+          <div class="main">
+            <div class="pagehead"><h2>Menu</h2><button class="btn primary">+ Add item <span class="ct">1</span></button></div>
+            <p class="small muted" style="margin-bottom:6px;">Category: <b style="color:var(--ink);">Main course</b></p>
+            <table class="table">
+              <thead><tr><th>Item</th><th>Price</th><th>Available <span class="ct">2</span></th><th></th></tr></thead>
+              <tbody>
+                <tr><td><span class="veg"></span> Paneer Butter Masala</td><td>₹220</td><td><span class="toggle"></span></td><td><button class="btn sm">Edit</button></td></tr>
+                <tr><td><span class="nonveg"></span> Butter Chicken</td><td>₹280</td><td><span class="toggle"></span></td><td><button class="btn sm">Edit</button></td></tr>
+                <tr><td><span class="veg"></span> Garlic Naan</td><td>₹45</td><td><span class="toggle off"></span> <span class="small muted">Sold out</span></td><td><button class="btn sm">Edit</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>CRUD items: name, price, description, image, category. <span class="rq">FR-5</span></li>
+          <li>Availability toggle hides a sold-out item from customers <b>without deleting</b> it. <span class="rq">FR-21</span></li>
+        </ol>
+        <div class="assume">Empty state: "No items yet — add your first dish". Prices are integer ₹ (cents internally).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R7 ADD/EDIT ITEM -->
+  <section class="screen" id="s-itemform">
+    <div class="scaphead"><span class="num">R7</span><h2>Add / edit item</h2><span class="req">FR-5</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/menu/new</span></div>
+        <div class="portal">
+          <aside class="side"><div class="brand"><span class="sq">Q</span> Punjabi Tadka</div><a>Dashboard</a><a>Orders</a><a class="on">Menu</a><a>Categories</a><a>Settings</a></aside>
+          <div class="main">
+            <div class="pagehead"><h2>Add item</h2></div>
+            <div class="card" style="max-width:620px;">
+              <div class="cols3" style="grid-template-columns:2fr 1fr;">
+                <div class="field"><label>Item name <span class="ct">1</span></label><div class="input">Dal Makhani</div></div>
+                <div class="field"><label>Price (₹)</label><div class="input">240</div></div>
+              </div>
+              <div class="field"><label>Description</label><div class="input ph">Slow-cooked black lentils in butter & cream</div></div>
+              <div class="cols3" style="grid-template-columns:1fr 1fr;">
+                <div class="field"><label>Category</label><div class="input">Main course</div></div>
+                <div class="field"><label>Veg / Non-veg</label><div class="seg"><span class="on">Veg</span><span>Non-veg</span></div></div>
+              </div>
+              <div class="field"><label>Photo <span class="ct">2</span></label><div class="img" style="height:90px;">drag image or click to upload</div></div>
+              <div class="row"><button class="btn primary">Save item</button><button class="btn">Cancel</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>Fields map to <code>MenuItem</code>: name, priceCents, description, category, isAvailable. <span class="rq">FR-5</span></li>
+          <li>Image is a placeholder block in the wireframe (no real upload).</li>
+        </ol>
+        <div class="assume">Validation: name + price required; price &gt; 0. New items default to Available.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R8 CATEGORIES -->
+  <section class="screen" id="s-categories">
+    <div class="scaphead"><span class="num">R8</span><h2>Categories</h2><span class="req">FR-5 · §4.6</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/categories</span></div>
+        <div class="portal">
+          <aside class="side"><div class="brand"><span class="sq">Q</span> Punjabi Tadka</div><a>Dashboard</a><a>Orders</a><a>Menu</a><a class="on">Categories</a><a>Settings</a></aside>
+          <div class="main">
+            <div class="pagehead"><h2>Categories</h2><button class="btn primary">+ Add category</button></div>
+            <table class="table">
+              <thead><tr><th>Order <span class="ct">1</span></th><th>Category</th><th>Items</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>⋮⋮ 1</td><td>Starters</td><td>6</td><td><button class="btn sm">Edit</button></td></tr>
+                <tr><td>⋮⋮ 2</td><td>Main course</td><td>12</td><td><button class="btn sm">Edit</button></td></tr>
+                <tr><td>⋮⋮ 3</td><td>Breads</td><td>5</td><td><button class="btn sm">Edit</button></td></tr>
+                <tr><td>⋮⋮ 4</td><td>Desserts</td><td>3</td><td><button class="btn sm">Edit</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>Categories group items (sortOrder controls display order on the customer detail page). <span class="rq">FR-5</span></li>
+        </ol>
+        <div class="assume">Restaurant → Category → Item hierarchy (PRD §4.6). Drag handle reorders (visual only here).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R13 SETTINGS -->
+  <section class="screen" id="s-settings">
+    <div class="scaphead"><span class="num">R13</span><h2>Profile / settings (hours + open-closed)</h2><span class="req">FR-3 · §2.5</span></div>
+    <div class="layout">
+      <div class="desktop">
+        <div class="chrome"><i></i><i></i><i></i><span class="url">qwikbite.app/restaurant/settings</span></div>
+        <div class="portal">
+          <aside class="side"><div class="brand"><span class="sq">Q</span> Punjabi Tadka</div><a>Dashboard</a><a>Orders</a><a>Menu</a><a>Categories</a><a class="on">Settings</a></aside>
+          <div class="main">
+            <div class="pagehead"><h2>Settings</h2></div>
+            <div class="card" style="max-width:620px;margin-bottom:14px;">
+              <div class="between" style="margin-bottom:10px;"><h3 style="font-size:14px;">Store status <span class="ct">1</span></h3><div class="row"><span class="small muted">Accepting orders</span><span class="toggle"></span></div></div>
+              <p class="small muted" style="margin:0;">When off, your restaurant shows "Closed" and takes no new orders.</p>
+            </div>
+            <div class="card" style="max-width:620px;">
+              <h3 style="font-size:14px;margin-bottom:10px;">Profile & timings <span class="ct">2</span></h3>
+              <div class="cols3" style="grid-template-columns:1fr 1fr;">
+                <div class="field"><label>Restaurant name</label><div class="input">Punjabi Tadka</div></div>
+                <div class="field"><label>Cuisine</label><div class="input">North Indian</div></div>
+                <div class="field"><label>Opening hours</label><div class="input">11:00 – 23:00</div></div>
+                <div class="field"><label>Delivery area</label><div class="input">MG Road, 5 km</div></div>
+              </div>
+              <button class="btn primary">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h4>Behaviour & data</h4>
+        <ol>
+          <li>Open/closed toggle gates new orders (store status). <span class="assume" style="display:inline;border:none;padding:0;">Assume.</span></li>
+          <li>Editable profile fields map to the <code>Restaurant</code> record. <span class="rq">FR-3</span></li>
+        </ol>
+        <div class="assume">No payouts/settlement screen — explicitly Future scope in the PRD.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  var SCREENS=[['s-login','R1 Login'],['s-onboard','R2 Onboarding'],['s-dash','R3 Dashboard'],
+    ['s-queue','R4 Order queue'],['s-orderdetail','R5 Order detail'],['s-menu','R6 Menu'],
+    ['s-itemform','R7 Add item'],['s-categories','R8 Categories'],['s-settings','R13 Settings']];
+  var nav=document.getElementById('nav');
+  SCREENS.forEach(function(s,i){var b=document.createElement('button');b.className='nav'+(i===0?' active':'');b.textContent=s[1];b.onclick=function(){show(s[0],b);};nav.appendChild(b);});
+  function show(id,btn){document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('show');});document.getElementById(id).classList.add('show');document.querySelectorAll('.nav').forEach(function(el){el.classList.remove('active');});btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+</script>
+</body>
+</html>

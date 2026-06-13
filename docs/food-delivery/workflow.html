@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Food Delivery — Workflow Prototype (clickable)</title>
+<style>
+  :root {
+    --line:#b9b9b9; --line-strong:#7d7d7d; --ink:#2b2b2b; --muted:#777;
+    --fill:#ececec; --fill-2:#f6f6f6; --primary:#444; --accent:#2f6f4f; --radius:6px;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; color:var(--ink); background:#fafafa; display:flex; }
+
+  /* sidebar */
+  .nav { position:sticky; top:0; align-self:flex-start; width:230px; height:100vh; overflow-y:auto;
+         border-right:1px solid var(--line); background:#fff; padding:16px 14px 40px; flex:0 0 230px; }
+  .nav h1 { font-size:14px; margin:0 0 4px; }
+  .nav .sub { font-size:11px; color:var(--muted); margin-bottom:16px; line-height:1.4; }
+  .nav .group { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:16px 0 6px; }
+  .nav button.jrn { display:block; width:100%; text-align:left; font-size:13px; color:var(--ink);
+        background:none; border:none; padding:7px 8px; border-radius:4px; cursor:pointer; }
+  .nav button.jrn:hover { background:var(--fill); }
+  .nav button.jrn.active { background:var(--fill); font-weight:700; }
+  .nav .legend { font-size:11px; color:var(--muted); margin-top:18px; line-height:1.6; border-top:1px solid var(--line); padding-top:12px; }
+
+  /* main */
+  .main { flex:1 1 auto; padding:22px 28px 120px; max-width:1000px; }
+  .titlebar { display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+  .titlebar h2 { margin:0; font-size:18px; }
+  .titlebar .hint { font-size:12px; color:var(--muted); }
+
+  /* stepper */
+  .stepper { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; padding:10px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
+  .step { font-size:11px; padding:4px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:#fff; cursor:pointer; white-space:nowrap; }
+  .step:hover { border-color:var(--line-strong); }
+  .step.done { color:var(--ink); background:var(--fill); }
+  .step.current { color:#fff; background:var(--primary); border-color:var(--primary); font-weight:700; }
+  .step .n { opacity:.6; margin-right:4px; }
+  .step.arrow { border:none; background:none; color:var(--muted); cursor:default; padding:4px 0; }
+
+  /* screen frame */
+  .vw-screen { display:none; }
+  .vw-screen.show { display:block; }
+  .screen { border:1px solid var(--line); border-radius:var(--radius); background:#fff; overflow:hidden; }
+  .screen.narrow { max-width:430px; margin:0 auto; }
+
+  .topnav,.subbar { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--fill-2); font-size:13px; }
+  .logo { font-weight:700; letter-spacing:.04em; }
+  .spacer { flex:1; }
+  .search { flex:1; border:1px solid var(--line); border-radius:999px; padding:6px 12px; color:var(--muted); font-size:13px; background:#fff; }
+  .body { padding:16px; }
+  .row { display:flex; gap:16px; }
+  .col { flex:1; min-width:0; }
+
+  .btn { display:inline-block; border:1px solid var(--line-strong); border-radius:4px; padding:6px 12px; font-size:13px; background:#fff; color:var(--ink); cursor:pointer; }
+  .btn:hover { background:var(--fill-2); }
+  .btn.primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .btn.primary:hover { background:#333; }
+  .btn.go { box-shadow:0 0 0 2px rgba(47,111,79,.0); }
+  .btn.block { display:block; text-align:center; width:100%; }
+  .btn.sm { padding:3px 8px; font-size:12px; }
+  .btn.disabled { color:#bbb; border-color:var(--line); cursor:not-allowed; }
+
+  .input { display:block; width:100%; border:1px solid var(--line); border-radius:4px; padding:7px 10px; font-size:13px; color:var(--muted); background:#fff; margin-top:4px; }
+  label.fld { display:block; font-size:12px; color:var(--ink); margin-bottom:10px; }
+
+  .img-ph { background:repeating-linear-gradient(45deg,#eee,#eee 8px,#e4e4e4 8px,#e4e4e4 16px); border:1px solid var(--line); border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:11px; min-height:60px; }
+  .card { border:1px solid var(--line); border-radius:var(--radius); padding:12px; background:#fff; }
+  .panel { border:1px solid var(--line); border-radius:var(--radius); background:var(--fill-2); }
+  .panel .panel-head { padding:8px 12px; border-bottom:1px solid var(--line); font-size:12px; font-weight:700; }
+  .panel .panel-body { padding:12px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .muted { color:var(--muted); } .small { font-size:12px; }
+  .hr { border:none; border-top:1px solid var(--line); margin:12px 0; }
+  .stack > * + * { margin-top:8px; }
+  .badge { display:inline-block; font-size:11px; border:1px solid var(--line-strong); border-radius:4px; padding:1px 7px; color:var(--ink); background:var(--fill); }
+  table.wf { width:100%; border-collapse:collapse; font-size:13px; }
+  table.wf th,table.wf td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  table.wf th { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+
+  .shell { display:flex; min-height:340px; }
+  .side { flex:0 0 150px; border-right:1px solid var(--line); background:var(--fill-2); padding:12px; font-size:13px; }
+  .side .item { padding:7px 8px; border-radius:4px; color:var(--muted); }
+  .side .item.active { background:var(--fill); color:var(--ink); font-weight:700; }
+  .content { flex:1; padding:16px; min-width:0; }
+
+  .timeline { list-style:none; margin:0; padding:0; }
+  .timeline li { display:flex; align-items:baseline; gap:10px; padding:6px 0; font-size:13px; }
+  .timeline .done .dot::before { content:"●"; }
+  .timeline .pending .dot::before { content:"○"; color:var(--muted); }
+  .timeline .now { font-weight:700; }
+  .timeline .time { margin-left:auto; color:var(--muted); }
+
+  .queue { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .queue .colhead { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:8px; }
+  .ordercard { border:1px solid var(--line); border-radius:var(--radius); padding:10px; margin-bottom:10px; font-size:13px; }
+
+  .toast { background:var(--fill); border:1px solid var(--line-strong); border-radius:4px; padding:8px 12px; font-size:12px; margin-bottom:12px; }
+
+  /* nav controls under a screen */
+  .navctl { display:flex; gap:8px; margin-top:14px; align-items:center; }
+  .navctl .note { font-size:12px; color:var(--muted); }
+
+  /* ---- flow map ---- */
+  .map-role { margin-bottom:26px; }
+  .map-role h3 { font-size:14px; margin:0 0 4px; }
+  .map-role .rdesc { font-size:12px; color:var(--muted); margin:0 0 12px; }
+  .flow { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  .node { border:1px solid var(--line-strong); border-radius:var(--radius); background:#fff; padding:8px 12px; font-size:12px; cursor:pointer; min-width:90px; text-align:center; }
+  .node:hover { background:var(--fill); }
+  .node .nlbl { font-weight:700; display:block; }
+  .node .nsub { color:var(--muted); font-size:10px; }
+  .node.terminal { background:var(--fill); }
+  .arrow-h { color:var(--muted); font-size:16px; }
+  .branch { font-size:11px; color:var(--muted); margin:6px 0 0 4px; }
+  .branch b { color:var(--ink); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>Food Delivery</h1>
+  <div class="sub">Clickable workflow prototype. Walk each role's journey end-to-end — click the buttons.</div>
+
+  <div class="group">Start here</div>
+  <button class="jrn" data-journey="map">🗺 Flow map (overview)</button>
+
+  <div class="group">Walk a journey</div>
+  <button class="jrn" data-journey="customer">🍔 Customer — order</button>
+  <button class="jrn" data-journey="restaurant">🧑‍🍳 Restaurant — fulfill</button>
+  <button class="jrn" data-journey="admin">🛡 Admin — approve</button>
+
+  <div class="legend">
+    <b>How to use</b><br />
+    Pick a journey, then click the highlighted button on each screen to move forward. The step tracker up top shows where you are — click any step to jump.
+  </div>
+</nav>
+
+<main class="main">
+  <div class="titlebar">
+    <h2 id="vw-title">Flow map</h2>
+    <span class="hint" id="vw-hint">Click any box to open that screen in the prototype.</span>
+  </div>
+
+  <div class="stepper" id="stepper" style="display:none;"></div>
+
+  <!-- ========================================================= -->
+  <!-- FLOW MAP OVERVIEW                                          -->
+  <!-- ========================================================= -->
+  <section class="vw-screen show" id="vw-map">
+    <div class="map-role">
+      <h3>🍔 Customer — turn a craving into a tracked, paid order</h3>
+      <p class="rdesc">Discovery-first. Payment gates everything: the order is created at PLACED but only reaches the restaurant after Stripe confirms PAID.</p>
+      <div class="flow">
+        <div class="node" data-journey="customer" data-goto="vw-landing"><span class="nlbl">Landing</span><span class="nsub">public</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-signup"><span class="nlbl">Sign Up</span><span class="nsub">Customer</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-discovery"><span class="nlbl">Discovery</span><span class="nsub">browse/search</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-detail"><span class="nlbl">Restaurant</span><span class="nsub">menu → add</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-cart"><span class="nlbl">Cart</span><span class="nsub">review</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-checkout"><span class="nlbl">Checkout</span><span class="nsub">address</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-stripe"><span class="nlbl">Stripe</span><span class="nsub">test pay</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="customer" data-goto="vw-confirm"><span class="nlbl">Confirmed</span><span class="nsub">PLACED+PAID</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node terminal" data-journey="customer" data-goto="vw-tracking"><span class="nlbl">Tracking</span><span class="nsub">polled → DELIVERED</span></div>
+      </div>
+      <div class="branch">Branch: <b>Cancel</b> allowed only before the restaurant Accepts. Adding from another restaurant → cart-conflict warning.</div>
+    </div>
+
+    <div class="map-role">
+      <h3>🧑‍🍳 Restaurant Owner — accept and move the order to delivered</h3>
+      <p class="rdesc">Only PAID orders land in the queue. Each transition is validated by the state machine and writes an OrderStatusEvent (the customer's timeline).</p>
+      <div class="flow">
+        <div class="node" data-journey="restaurant" data-goto="vw-r-signin"><span class="nlbl">Sign In</span><span class="nsub">role=RESTAURANT</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="restaurant" data-goto="vw-queue"><span class="nlbl">Orders Queue</span><span class="nsub">New order (PAID)</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="restaurant" data-goto="vw-rdetail"><span class="nlbl">Order Detail</span><span class="nsub">Accept / Reject</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="restaurant" data-goto="vw-prep"><span class="nlbl">Preparing</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="restaurant" data-goto="vw-ofd"><span class="nlbl">Out for delivery</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node terminal" data-journey="restaurant" data-goto="vw-delivered"><span class="nlbl">Delivered</span></div>
+      </div>
+      <div class="branch">Branch: <b>Reject</b> (with reason) from a PLACED order. Illegal jumps (e.g. PLACED → DELIVERED) are blocked by <code>lib/orders/state.ts</code>.</div>
+    </div>
+
+    <div class="map-role">
+      <h3>🛡 Admin — gatekeep supply so customers only see approved restaurants</h3>
+      <p class="rdesc">A new restaurant is PENDING and invisible to customers until an admin approves it.</p>
+      <div class="flow">
+        <div class="node" data-journey="admin" data-goto="vw-a-signin"><span class="nlbl">Sign In</span><span class="nsub">role=ADMIN</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="admin" data-goto="vw-overview"><span class="nlbl">Overview</span><span class="nsub">3 pending</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="admin" data-goto="vw-restaurants"><span class="nlbl">Restaurants</span><span class="nsub">filter Pending</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node" data-journey="admin" data-goto="vw-review"><span class="nlbl">Review</span><span class="nsub">profile + menu</span></div>
+        <span class="arrow-h">→</span>
+        <div class="node terminal" data-journey="admin" data-goto="vw-approved"><span class="nlbl">Approved</span><span class="nsub">now visible</span></div>
+      </div>
+      <div class="branch">Branch: <b>Suspend</b> an approved restaurant → hidden from customers immediately.</div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- CUSTOMER JOURNEY SCREENS                                   -->
+  <!-- ========================================================= -->
+
+  <section class="vw-screen" id="vw-landing">
+    <div class="screen">
+      <div class="topnav"><span class="logo">LOGO</span><span class="spacer"></span><span class="btn sm">Browse</span><span class="btn sm">Sign in</span></div>
+      <div class="body" style="text-align:center; padding:48px 16px;">
+        <h3 style="margin:0 0 8px;">Order food from local restaurants</h3>
+        <p class="muted small" style="margin:0 0 20px;">Discover, order, track — all in one place.</p>
+        <button class="btn primary" data-goto="vw-discovery">Browse restaurants</button>
+        <button class="btn" data-goto="vw-signup">For restaurants / Sign up</button>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Public front door. Click <b>Browse</b> (jumps to Discovery) or <b>Sign up</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-signup">
+    <div class="screen narrow">
+      <div class="body">
+        <h3 style="margin:0 0 16px; text-align:center;">Create account</h3>
+        <div class="fld">I am a:
+          <div style="margin-top:6px;">
+            <label class="small"><input type="radio" name="role" checked /> Customer</label>&nbsp;&nbsp;
+            <label class="small"><input type="radio" name="role" /> Restaurant</label>
+          </div>
+        </div>
+        <label class="fld">Name <input class="input" placeholder="Maya" /></label>
+        <label class="fld">Email <input class="input" placeholder="maya@x.com" /></label>
+        <label class="fld">Password <input class="input" placeholder="••••••••" /></label>
+        <button class="btn primary block" data-goto="vw-discovery">Create account</button>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Customer → straight to Discovery. (A Restaurant sign-up would go to profile setup and start as PENDING.)</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-discovery">
+    <div class="screen">
+      <div class="topnav"><span class="logo">LOGO</span><span class="search">🔍 search restaurants or food…</span><button class="btn sm" data-goto="vw-cart">🛒 (2)</button><span class="btn sm">▾ Account</span></div>
+      <div class="row" style="padding:0;">
+        <div class="col" style="flex:0 0 160px; border-right:1px solid var(--line); padding:14px;">
+          <div class="small" style="font-weight:700; margin-bottom:8px;">Filters</div>
+          <label class="small" style="display:block; margin:4px 0;"><input type="checkbox" /> Pizza</label>
+          <label class="small" style="display:block; margin:4px 0;"><input type="checkbox" /> Indian</label>
+          <label class="small" style="display:block; margin:4px 0;"><input type="checkbox" /> Sushi</label>
+        </div>
+        <div class="col" style="padding:14px;">
+          <div class="small" style="font-weight:700; margin-bottom:10px;">Restaurants near you <span class="muted">(APPROVED only)</span></div>
+          <div class="grid-3">
+            <div class="card stack"><div class="img-ph" style="height:60px;">image</div><div style="font-weight:700;">Mario's</div><div class="small muted">Pizza · ~30 min</div><button class="btn sm block" data-goto="vw-detail">View</button></div>
+            <div class="card stack"><div class="img-ph" style="height:60px;">image</div><div style="font-weight:700;">Spice Hub</div><div class="small muted">Indian · ~25 min</div><span class="btn sm block">View</span></div>
+            <div class="card stack"><div class="img-ph" style="height:60px;">image</div><div style="font-weight:700;">Sushi Go</div><div class="small muted">Sushi · ~40 min</div><span class="btn sm block">View</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Click <b>View</b> on Mario's to open the menu.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-detail">
+    <div class="screen">
+      <div class="topnav"><span class="logo">LOGO</span><span class="search">🔍 …</span><button class="btn sm" data-goto="vw-cart">🛒 (2)</button><span class="btn sm">▾ Acct</span></div>
+      <div class="body">
+        <button class="btn sm" data-goto="vw-discovery">← Back</button>
+        <div class="img-ph" style="height:80px; margin:10px 0;">Banner image</div>
+        <div style="font-weight:700;">Mario's <span class="muted small">· Pizza · ~30 min · Open</span></div>
+      </div>
+      <div class="row" style="padding:0 16px 16px;">
+        <div class="col">
+          <div class="small" style="font-weight:700; margin-bottom:6px;">MAINS</div>
+          <div class="card"><div class="row" style="gap:10px; align-items:center;"><div class="img-ph" style="width:46px; height:38px;">img</div><div class="col"><div class="small" style="font-weight:700;">Margherita — $9.00</div><div class="small muted">classic tomato &amp; mozzarella</div></div><span class="btn sm">Add +</span></div></div>
+          <div class="card" style="margin-top:8px;"><div class="row" style="gap:10px; align-items:center;"><div class="img-ph" style="width:46px; height:38px;">img</div><div class="col"><div class="small" style="font-weight:700;">Coke — $2.00</div></div><span class="btn sm">Add +</span></div></div>
+          <div class="card" style="margin-top:8px; opacity:.55;"><div class="row" style="gap:10px; align-items:center;"><div class="img-ph" style="width:46px; height:38px;">img</div><div class="col"><div class="small" style="font-weight:700;">Soup (Sold out)</div></div><span class="btn sm disabled">—</span></div></div>
+        </div>
+        <div class="col" style="flex:0 0 220px;">
+          <div class="panel"><div class="panel-head">Cart</div><div class="panel-body stack small">
+            <div class="row"><span class="col">Margherita ×1</span><span>$9.00</span></div>
+            <div class="row"><span class="col">Coke ×1</span><span>$2.00</span></div>
+            <hr class="hr" /><div class="row" style="font-weight:700;"><span class="col">Subtotal</span><span>$11.00</span></div>
+            <button class="btn primary block" data-goto="vw-cart">Go to cart</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Items add to a single-restaurant cart. Click <b>Go to cart</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-cart">
+    <div class="screen">
+      <div class="subbar"><button class="btn sm" data-goto="vw-detail">← Back to restaurant</button><span class="spacer"></span><span class="small" style="font-weight:700;">Your cart — Mario's</span></div>
+      <div class="body">
+        <table class="wf"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th></th></tr></thead><tbody>
+          <tr><td>Margherita</td><td><span class="btn sm">− 1 +</span></td><td>$9.00</td><td><span class="btn sm">×</span></td></tr>
+          <tr><td>Coke</td><td><span class="btn sm">− 1 +</span></td><td>$2.00</td><td><span class="btn sm">×</span></td></tr>
+        </tbody></table>
+        <hr class="hr" />
+        <div style="max-width:280px; margin-left:auto;" class="stack small">
+          <div class="row"><span class="col">Subtotal</span><span>$11.00</span></div>
+          <div class="row"><span class="col">Delivery fee</span><span>$2.00</span></div>
+          <div class="row" style="font-weight:700;"><span class="col">Total</span><span>$13.00</span></div>
+          <button class="btn primary block" data-goto="vw-checkout">Proceed to checkout</button>
+        </div>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Money is integer cents under the hood. Click <b>Proceed to checkout</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-checkout">
+    <div class="screen">
+      <div class="subbar"><span style="font-weight:700;">Checkout</span></div>
+      <div class="row" style="padding:16px;">
+        <div class="col stack">
+          <div class="small" style="font-weight:700;">Delivery address</div>
+          <label class="small" style="display:block;"><input type="radio" name="addr" checked /> 12 Main St, City</label>
+          <label class="small" style="display:block;"><input type="radio" name="addr" /> 8 Oak Ave, City</label>
+          <span class="btn sm">+ Add new address</span>
+          <hr class="hr" />
+          <div class="small" style="font-weight:700;">Payment</div>
+          <div class="small muted">Pay securely via Stripe (test mode)</div>
+        </div>
+        <div class="col">
+          <div class="panel"><div class="panel-head">Order summary</div><div class="panel-body stack small">
+            <div class="row"><span class="col">Margherita ×1</span><span>$9.00</span></div>
+            <div class="row"><span class="col">Coke ×1</span><span>$2.00</span></div>
+            <hr class="hr" />
+            <div class="row"><span class="col">Subtotal</span><span>$11.00</span></div>
+            <div class="row"><span class="col">Delivery fee</span><span>$2.00</span></div>
+            <div class="row" style="font-weight:700;"><span class="col">Total</span><span>$13.00</span></div>
+            <button class="btn primary block" data-goto="vw-stripe">Pay $13.00</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Click <b>Pay</b> → redirects to Stripe's hosted checkout.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-stripe">
+    <div class="screen narrow">
+      <div class="subbar"><span class="small muted">🔒 stripe.com (test mode)</span></div>
+      <div class="body stack">
+        <div style="font-weight:700;">Pay Mario's — $13.00</div>
+        <label class="fld">Card number <input class="input" value="4242 4242 4242 4242" /></label>
+        <div class="row"><label class="fld col">Expiry <input class="input" value="12 / 34" /></label><label class="fld col">CVC <input class="input" value="123" /></label></div>
+        <button class="btn primary block" data-goto="vw-confirm">Pay $13.00</button>
+        <div class="small muted">On success, Stripe calls our webhook → Payment flips to PAID.</div>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">This screen belongs to Stripe (hosted). Click <b>Pay</b> to simulate a successful test charge.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-confirm">
+    <div class="screen">
+      <div class="body" style="text-align:center; padding:36px 16px;">
+        <div style="font-size:28px;">✓</div>
+        <h3 style="margin:8px 0;">Order placed!</h3>
+        <p class="small muted">Order #1042 · Mario's · $13.00 · <span class="badge">PLACED</span> <span class="badge">PAID</span></p>
+        <p class="small muted" style="max-width:420px; margin:6px auto 18px;">Your payment is confirmed. The order is now in Mario's queue. Track it live below.</p>
+        <button class="btn primary" data-goto="vw-tracking">Track my order</button>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">The order only reaches the restaurant <em>because</em> payment is PAID. Click <b>Track my order</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-tracking">
+    <div class="screen">
+      <div class="subbar"><span style="font-weight:700;">Order #1042 — Mario's</span><span class="spacer"></span><span class="small muted">(auto-refreshing)</span></div>
+      <div class="body">
+        <ul class="timeline">
+          <li class="done"><span class="dot"></span> Placed <span class="time">12:01</span></li>
+          <li class="done"><span class="dot"></span> Accepted <span class="time">12:03</span></li>
+          <li class="done now"><span class="dot"></span> Preparing ◀ current <span class="time">12:06</span></li>
+          <li class="pending"><span class="dot"></span> Out for delivery <span class="time">—</span></li>
+          <li class="pending"><span class="dot"></span> Delivered <span class="time">—</span></li>
+        </ul>
+        <hr class="hr" />
+        <div class="small">Items: Margherita ×1, Coke ×1 · Total $13.00</div>
+        <div class="small muted">Deliver to: 12 Main St, City</div>
+        <div style="margin-top:12px;"><span class="btn disabled">Cancel order</span> <span class="small muted">(disabled — already Accepted)</span></div>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">End of the customer journey. The status here is driven by what the restaurant does — try the <b>Restaurant</b> journey next.</span><button class="btn sm" data-journey="restaurant" data-goto="vw-queue">See restaurant side →</button></div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- RESTAURANT JOURNEY SCREENS                                 -->
+  <!-- ========================================================= -->
+
+  <section class="vw-screen" id="vw-r-signin">
+    <div class="screen narrow">
+      <div class="body">
+        <h3 style="margin:0 0 16px; text-align:center;">Sign in</h3>
+        <label class="fld">Email <input class="input" value="sam@marios.com" /></label>
+        <label class="fld">Password <input class="input" value="••••••••" /></label>
+        <button class="btn primary block" data-goto="vw-queue">Sign in</button>
+        <p class="small muted" style="text-align:center; margin-top:10px;">role=RESTAURANT → lands on the Orders Queue</p>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Click <b>Sign in</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-queue">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Orders</div><div class="item">Menu</div><div class="item">Profile</div></div>
+      <div class="content">
+        <div class="row" style="align-items:center; margin-bottom:12px;"><span style="font-weight:700;">Orders</span><span class="spacer"></span><span class="btn sm">Mario's ▾</span></div>
+        <div class="queue">
+          <div><div class="colhead">New</div><div class="ordercard"><div style="font-weight:700;">#1042</div><div class="muted">2 items · $13.00 · PAID</div><button class="btn sm primary block" style="margin-top:6px;" data-goto="vw-rdetail">Open</button></div></div>
+          <div><div class="colhead">In progress</div><div class="ordercard"><div style="font-weight:700;">#1039</div><div class="muted">Preparing · $20.00</div><span class="btn sm block" style="margin-top:6px;">Open</span></div></div>
+          <div><div class="colhead">Completed</div><div class="ordercard"><div style="font-weight:700;">#1031</div><div class="muted">Delivered · $22.00</div><span class="btn sm block" style="margin-top:6px;">View</span></div></div>
+        </div>
+        <p class="small muted" style="margin-top:10px;">#1042 appeared here only because its payment is PAID. Click <b>Open</b>.</p>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">The queue polls for new paid orders.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-rdetail">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Orders</div><div class="item">Menu</div><div class="item">Profile</div></div>
+      <div class="content">
+        <div class="row" style="align-items:center;"><button class="btn sm" data-goto="vw-queue">← Queue</button><span class="spacer"></span><span style="font-weight:700;">Order #1042</span><span class="spacer"></span><span class="badge">PLACED</span></div>
+        <hr class="hr" />
+        <div class="small">Customer: Maya · Placed 12:01 · <span class="badge">Paid ✓</span></div>
+        <div class="small muted">Deliver to: 12 Main St, City</div>
+        <hr class="hr" />
+        <div class="small" style="font-weight:700;">Items</div>
+        <div class="small">Margherita ×1 — $9.00 · Coke ×1 — $2.00</div>
+        <div class="small muted">Total $13.00</div>
+        <hr class="hr" />
+        <div class="small" style="font-weight:700; margin-bottom:6px;">Current state: PLACED → choose an action</div>
+        <button class="btn primary" data-goto="vw-prep">Accept</button>
+        <button class="btn" data-goto="vw-reject">Reject</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">Click <b>Accept</b> to move forward, or <b>Reject</b> to see the branch.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-prep">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Orders</div><div class="item">Menu</div><div class="item">Profile</div></div>
+      <div class="content">
+        <div class="toast">✓ Accepted — OrderStatusEvent written (PLACED → ACCEPTED). Customer's timeline updated.</div>
+        <div class="row" style="align-items:center;"><span style="font-weight:700;">Order #1042</span><span class="spacer"></span><span class="badge">ACCEPTED</span></div>
+        <hr class="hr" />
+        <div class="small muted">Next legal transition only:</div>
+        <button class="btn primary" data-goto="vw-ofd">Start preparing</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">The state machine only offers the <em>next legal</em> step. Click <b>Start preparing</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-ofd">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Orders</div><div class="item">Menu</div><div class="item">Profile</div></div>
+      <div class="content">
+        <div class="toast">✓ Preparing (ACCEPTED → PREPARING).</div>
+        <div class="row" style="align-items:center;"><span style="font-weight:700;">Order #1042</span><span class="spacer"></span><span class="badge">PREPARING</span></div>
+        <hr class="hr" />
+        <button class="btn primary" data-goto="vw-delivered">Out for delivery</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">Click <b>Out for delivery</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-delivered">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Orders</div><div class="item">Menu</div><div class="item">Profile</div></div>
+      <div class="content">
+        <div class="toast">✓ Out for delivery → Mark delivered. Each step wrote an event.</div>
+        <div class="row" style="align-items:center;"><span style="font-weight:700;">Order #1042</span><span class="spacer"></span><span class="badge">DELIVERED</span></div>
+        <hr class="hr" />
+        <div class="small muted">Order complete. It moves to the Completed column; the customer's timeline shows all five steps done.</div>
+        <button class="btn" style="margin-top:10px;" data-goto="vw-queue">← Back to queue</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">End of the restaurant journey — the full lifecycle PLACED → DELIVERED is done.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-reject">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Orders</div><div class="item">Menu</div><div class="item">Profile</div></div>
+      <div class="content">
+        <div class="toast">Branch: order #1042 was REJECTED (PLACED → REJECTED) with a reason. Customer is notified; payment would be refunded in a real build.</div>
+        <div class="row" style="align-items:center;"><span style="font-weight:700;">Order #1042</span><span class="spacer"></span><span class="badge">REJECTED</span></div>
+        <hr class="hr" />
+        <button class="btn" data-goto="vw-queue">← Back to queue</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">This is the Reject branch — a terminal state. Go back to the queue.</span></div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- ADMIN JOURNEY SCREENS                                      -->
+  <!-- ========================================================= -->
+
+  <section class="vw-screen" id="vw-a-signin">
+    <div class="screen narrow">
+      <div class="body">
+        <h3 style="margin:0 0 16px; text-align:center;">Sign in</h3>
+        <label class="fld">Email <input class="input" value="admin@platform.com" /></label>
+        <label class="fld">Password <input class="input" value="••••••••" /></label>
+        <button class="btn primary block" data-goto="vw-overview">Sign in</button>
+        <p class="small muted" style="text-align:center; margin-top:10px;">role=ADMIN (seeded) → Overview</p>
+      </div>
+    </div>
+    <div class="navctl"><span class="note">Admin accounts are seeded, not self-registered. Click <b>Sign in</b>.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-overview">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item active">▸ Overview</div><div class="item" data-goto="vw-restaurants" style="cursor:pointer;">Restaurants</div><div class="item">Users</div><div class="item">Orders</div></div>
+      <div class="content">
+        <div style="font-weight:700; margin-bottom:12px;">Platform overview</div>
+        <div class="grid-4">
+          <div class="card"><div class="small muted">Restaurants</div><div style="font-size:22px; font-weight:700;">24</div></div>
+          <div class="card"><div class="small muted">Orders today</div><div style="font-size:22px; font-weight:700;">58</div></div>
+          <div class="card"><div class="small muted">Test revenue</div><div style="font-size:22px; font-weight:700;">$1,240</div></div>
+          <div class="card" style="border-color:var(--line-strong); cursor:pointer;" data-goto="vw-restaurants"><div class="small muted">Pending approvals</div><div style="font-size:22px; font-weight:700;">3 →</div></div>
+        </div>
+        <p class="small muted" style="margin-top:14px;">Click the <b>Pending approvals</b> card (or “Restaurants” in the sidebar).</p>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">“Pending approvals” is the most action-triggering metric — it leads you into the approval flow.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-restaurants">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item" data-goto="vw-overview" style="cursor:pointer;">Overview</div><div class="item active">▸ Restaurants</div><div class="item">Users</div><div class="item">Orders</div></div>
+      <div class="content">
+        <div class="row" style="align-items:center; margin-bottom:12px;"><span style="font-weight:700;">Restaurants</span><span class="spacer"></span><span class="small muted">Filter: <b>Pending</b> | Approved | Suspended</span></div>
+        <table class="wf"><thead><tr><th>Name</th><th>Cuisine</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+          <tr><td>Mario's</td><td>Pizza</td><td><span class="badge">PENDING</span></td><td><button class="btn sm" data-goto="vw-review">Review</button> <span class="btn sm">Approve</span></td></tr>
+          <tr><td>Bao House</td><td>Asian</td><td><span class="badge">PENDING</span></td><td><span class="btn sm">Review</span> <span class="btn sm">Approve</span></td></tr>
+        </tbody></table>
+        <p class="small muted" style="margin-top:8px;">Click <b>Review</b> on Mario's to inspect before approving.</p>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">New restaurants start PENDING and are invisible to customers.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-review">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item">Overview</div><div class="item active">▸ Restaurants</div><div class="item">Users</div><div class="item">Orders</div></div>
+      <div class="content">
+        <div class="row" style="align-items:center;"><button class="btn sm" data-goto="vw-restaurants">← Back</button><span class="spacer"></span><span style="font-weight:700;">Review — Mario's</span><span class="spacer"></span><span class="badge">PENDING</span></div>
+        <hr class="hr" />
+        <div class="row">
+          <div class="col card stack"><div class="small" style="font-weight:700;">Profile</div><div class="small">Cuisine: Pizza</div><div class="small">Hours: Mon–Sun 10:00–22:00</div><div class="small">Delivery: City center; 5km</div></div>
+          <div class="col card stack"><div class="small" style="font-weight:700;">Menu preview</div><div class="small muted">Margherita $9.00 · Coke $2.00 · Garlic Bread $4.00 …</div></div>
+        </div>
+        <hr class="hr" />
+        <button class="btn primary" data-goto="vw-approved">Approve</button>
+        <button class="btn" data-goto="vw-restaurants">Reject</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">Click <b>Approve</b> to make Mario's live.</span></div>
+  </section>
+
+  <section class="vw-screen" id="vw-approved">
+    <div class="screen"><div class="shell">
+      <div class="side"><div class="item">Overview</div><div class="item active">▸ Restaurants</div><div class="item">Users</div><div class="item">Orders</div></div>
+      <div class="content">
+        <div class="toast">✓ Mario's approved (PENDING → APPROVED). It is now visible to customers on Discovery.</div>
+        <table class="wf"><thead><tr><th>Name</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+          <tr><td>Mario's</td><td><span class="badge">APPROVED</span></td><td><span class="btn sm">View</span> <span class="btn sm">Suspend</span></td></tr>
+        </tbody></table>
+        <p class="small muted" style="margin-top:10px;">This closes the loop: an approved restaurant is exactly what the Customer journey browses on Discovery.</p>
+        <button class="btn sm" style="margin-top:6px;" data-journey="customer" data-goto="vw-discovery">See it on the customer side →</button>
+      </div>
+    </div></div>
+    <div class="navctl"><span class="note">End of the admin journey. Supply is now live for customers.</span></div>
+  </section>
+
+</main>
+
+<script>
+  // ----- Journey definitions: ordered steps for the top tracker -----
+  const journeys = {
+    customer: { title: "Customer — order journey",
+      steps: [
+        ["vw-landing","Landing"],["vw-signup","Sign Up"],["vw-discovery","Discovery"],
+        ["vw-detail","Restaurant"],["vw-cart","Cart"],["vw-checkout","Checkout"],
+        ["vw-stripe","Stripe"],["vw-confirm","Confirmed"],["vw-tracking","Tracking"],
+      ]},
+    restaurant: { title: "Restaurant — fulfillment journey",
+      steps: [
+        ["vw-r-signin","Sign In"],["vw-queue","Queue"],["vw-rdetail","Order Detail"],
+        ["vw-prep","Accepted"],["vw-ofd","Preparing"],["vw-delivered","Delivered"],
+      ]},
+    admin: { title: "Admin — approval journey",
+      steps: [
+        ["vw-a-signin","Sign In"],["vw-overview","Overview"],["vw-restaurants","Restaurants"],
+        ["vw-review","Review"],["vw-approved","Approved"],
+      ]},
+  };
+
+  let activeJourney = null;
+  const titleEl = document.getElementById("vw-title");
+  const hintEl  = document.getElementById("vw-hint");
+  const stepperEl = document.getElementById("stepper");
+
+  function show(id) {
+    document.querySelectorAll(".vw-screen").forEach(s => s.classList.remove("show"));
+    const el = document.getElementById(id);
+    if (el) el.classList.add("show");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    renderStepper(id);
+  }
+
+  function renderStepper(currentId) {
+    if (currentId === "vw-map" || !activeJourney) {
+      stepperEl.style.display = "none";
+      titleEl.textContent = "Flow map";
+      hintEl.textContent = "Click any box to open that screen in the prototype.";
+      return;
+    }
+    const j = journeys[activeJourney];
+    titleEl.textContent = j.title;
+    hintEl.textContent = "Click the highlighted button on each screen to advance — or click a step below to jump.";
+    const idx = j.steps.findIndex(s => s[0] === currentId);
+    stepperEl.style.display = "flex";
+    stepperEl.innerHTML = "";
+    j.steps.forEach((s, i) => {
+      if (i > 0) {
+        const a = document.createElement("span");
+        a.className = "step arrow"; a.textContent = "→";
+        stepperEl.appendChild(a);
+      }
+      const b = document.createElement("span");
+      b.className = "step" + (i < idx ? " done" : "") + (i === idx ? " current" : "");
+      b.innerHTML = '<span class="n">' + (i + 1) + '</span>' + s[1];
+      b.onclick = () => show(s[0]);
+      stepperEl.appendChild(b);
+    });
+  }
+
+  function setJourney(name) {
+    activeJourney = (name === "map") ? null : name;
+    document.querySelectorAll(".nav button.jrn").forEach(btn =>
+      btn.classList.toggle("active", btn.dataset.journey === name));
+    if (name === "map") { show("vw-map"); }
+    else { show(journeys[name].steps[0][0]); }
+  }
+
+  // sidebar journey buttons
+  document.querySelectorAll(".nav button.jrn").forEach(btn =>
+    btn.addEventListener("click", () => setJourney(btn.dataset.journey)));
+
+  // any element with data-goto navigates; data-journey switches the active tracker
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-goto]");
+    if (!t) return;
+    if (t.dataset.journey) {
+      activeJourney = t.dataset.journey;
+      document.querySelectorAll(".nav button.jrn").forEach(btn =>
+        btn.classList.toggle("active", btn.dataset.journey === t.dataset.journey));
+    }
+    show(t.dataset.goto);
+  });
+
+  // start on the flow map
+  setJourney("map");
+</script>
+</body>
+</html>

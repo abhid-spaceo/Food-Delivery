@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Food Delivery — High-Fidelity Design (all 3 roles)</title>
+<style>
+  :root{
+    --brand:#FF5A1F; --brand-dark:#E04A12; --brand-soft:#FFF1EA;
+    --ink:#18181B; --text:#3F3F46; --muted:#8A8A93; --line:#ECECEF;
+    --bg:#F6F6F7; --card:#FFFFFF;
+    --success:#16A34A; --success-soft:#E7F6EC;
+    --warn:#D97706; --warn-soft:#FCF1DF;
+    --danger:#DC2626; --danger-soft:#FCEBEB;
+    --info:#2563EB; --info-soft:#E9EFFD;
+    --r:16px; --r-sm:10px; --pill:999px;
+    --sh-sm:0 1px 2px rgba(24,24,27,.06),0 1px 3px rgba(24,24,27,.05);
+    --sh-md:0 6px 18px rgba(24,24,27,.08);
+    --sh-lg:0 16px 40px rgba(24,24,27,.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{color:var(--ink);margin:0;}
+  .muted{color:var(--muted);}
+
+  /* ---------- role switch header ---------- */
+  .appbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.85);
+    backdrop-filter:saturate(150%) blur(8px);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:18px;padding:12px 26px;}
+  .appbar .mark{display:flex;align-items:center;gap:9px;font-weight:800;color:var(--ink);font-size:16px;letter-spacing:-.01em;}
+  .appbar .dot{width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,#FF7A3C,#FF3D2E);
+    display:grid;place-items:center;color:#fff;font-size:15px;box-shadow:var(--sh-sm);}
+  .roletabs{display:flex;gap:6px;margin-left:8px;}
+  .roletab{border:none;background:none;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--muted);
+    padding:8px 16px;border-radius:var(--pill);display:flex;align-items:center;gap:7px;transition:.15s;}
+  .roletab:hover{background:var(--bg);color:var(--text);}
+  .roletab.active{background:var(--ink);color:#fff;}
+  .appbar .spacer{flex:1;}
+  .appbar .tag{font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:var(--pill);padding:5px 12px;}
+
+  /* ---------- canvas ---------- */
+  .canvas{max-width:1240px;margin:0 auto;padding:30px 26px 110px;}
+  .role{display:none;}
+  .role.show{display:block;}
+  .scaption{display:flex;align-items:center;gap:10px;margin:34px 4px 12px;}
+  .scaption:first-child{margin-top:6px;}
+  .scaption .n{font-size:12px;font-weight:700;color:#fff;background:var(--brand);border-radius:7px;padding:2px 8px;}
+  .scaption h3{font-size:15px;}
+  .scaption .why{font-size:12.5px;color:var(--muted);}
+
+  /* device frame */
+  .device{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--sh-lg);}
+  .chrome{display:flex;align-items:center;gap:7px;padding:11px 16px;background:#FBFBFC;border-bottom:1px solid var(--line);}
+  .chrome i{width:11px;height:11px;border-radius:50%;background:#E2E2E6;display:inline-block;}
+  .chrome i:nth-child(1){background:#FF6058;} .chrome i:nth-child(2){background:#FFBD2E;} .chrome i:nth-child(3){background:#28C840;}
+  .chrome .url{margin-left:12px;font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:7px;padding:4px 12px;}
+
+  /* ---------- shared bits ---------- */
+  .btn{border:none;border-radius:var(--pill);padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;}
+  .btn.primary{background:var(--brand);color:#fff;box-shadow:0 4px 12px rgba(255,90,31,.28);}
+  .btn.primary:hover{background:var(--brand-dark);}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:#d4d4d8;}
+  .btn.sm{padding:7px 13px;font-size:12.5px;}
+  .btn.block{display:block;width:100%;text-align:center;}
+  .badge{font-size:11.5px;font-weight:700;border-radius:var(--pill);padding:4px 11px;display:inline-flex;align-items:center;gap:5px;}
+  .b-green{background:var(--success-soft);color:var(--success);}
+  .b-amber{background:var(--warn-soft);color:var(--warn);}
+  .b-red{background:var(--danger-soft);color:var(--danger);}
+  .b-blue{background:var(--info-soft);color:var(--info);}
+  .b-gray{background:#F1F1F3;color:#6B6B72;}
+  .chip{font-size:13px;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:var(--pill);padding:8px 15px;cursor:pointer;white-space:nowrap;display:inline-flex;gap:7px;align-items:center;}
+  .chip.on{background:var(--brand-soft);border-color:#ffd2bd;color:var(--brand-dark);}
+
+  .food{border-radius:var(--r-sm);display:grid;place-items:center;font-size:34px;}
+  .g1{background:linear-gradient(135deg,#FFE3C2,#FFB07A);} .g2{background:linear-gradient(135deg,#FFD6D6,#FF9A8B);}
+  .g3{background:linear-gradient(135deg,#D6F0E0,#86D6A8);} .g4{background:linear-gradient(135deg,#DCE3FF,#9CB0FF);}
+  .g5{background:linear-gradient(135deg,#FBE7B0,#F4C04F);} .g6{background:linear-gradient(135deg,#EAD9FF,#B98BFF);}
+
+  /* ===== CUSTOMER topnav ===== */
+  .cnav{display:flex;align-items:center;gap:16px;padding:16px 22px;border-bottom:1px solid var(--line);}
+  .cnav .logo{font-weight:800;color:var(--ink);font-size:17px;display:flex;align-items:center;gap:8px;}
+  .cnav .logo .dot{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#FF7A3C,#FF3D2E);display:grid;place-items:center;color:#fff;font-size:13px;}
+  .csearch{flex:1;max-width:460px;display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);border-radius:var(--pill);padding:10px 16px;color:var(--muted);font-size:13.5px;}
+  .iconbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;font-size:16px;position:relative;cursor:pointer;}
+  .iconbtn .cnt{position:absolute;top:-4px;right:-4px;background:var(--brand);color:#fff;font-size:10px;font-weight:700;border-radius:var(--pill);padding:1px 6px;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#FFB07A,#FF6B6B);color:#fff;display:grid;place-items:center;font-weight:700;}
+
+  .cbody{padding:22px;}
+  .hero{background:linear-gradient(110deg,#1f1f23,#39271f);border-radius:var(--r);padding:30px 32px;color:#fff;display:flex;align-items:center;gap:20px;margin-bottom:22px;overflow:hidden;position:relative;}
+  .hero h2{font-size:26px;letter-spacing:-.02em;margin-bottom:6px;}
+  .hero p{color:#d4d4d8;font-size:14px;margin:0 0 16px;}
+  .hero .blob{position:absolute;right:-30px;top:-30px;font-size:160px;opacity:.18;}
+  .rowchips{display:flex;gap:10px;overflow:auto;padding-bottom:6px;margin-bottom:18px;}
+  .sectionhead{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px;}
+  .sectionhead h3{font-size:17px;}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .rcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);transition:.18s;cursor:pointer;}
+  .rcard:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+  .rcard .ph{height:128px;position:relative;}
+  .rcard .fee{position:absolute;left:12px;bottom:12px;background:#fff;border-radius:var(--pill);font-size:11.5px;font-weight:700;color:var(--ink);padding:4px 10px;box-shadow:var(--sh-sm);}
+  .rcard .fav{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center;}
+  .rcard .meta{padding:14px 16px;}
+  .rcard .meta .top{display:flex;justify-content:space-between;align-items:center;}
+  .rcard .name{font-weight:700;color:var(--ink);font-size:15px;}
+  .rcard .rate{font-size:12.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:3px;}
+  .rcard .sub{font-size:12.5px;color:var(--muted);margin-top:3px;}
+
+  /* restaurant detail */
+  .banner{height:170px;position:relative;}
+  .banner .back{position:absolute;left:16px;top:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;box-shadow:var(--sh-sm);}
+  .rdhead{padding:18px 22px;border-bottom:1px solid var(--line);}
+  .rdhead h2{font-size:21px;letter-spacing:-.01em;}
+  .rdhead .line{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:13px;margin-top:7px;flex-wrap:wrap;}
+  .rdwrap{display:flex;gap:22px;padding:22px;}
+  .menucol{flex:1;}
+  .catpill{display:inline-block;font-size:12px;font-weight:700;color:var(--brand-dark);background:var(--brand-soft);border-radius:var(--pill);padding:5px 13px;margin-bottom:14px;}
+  .mitem{display:flex;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;background:#fff;}
+  .mitem .info{flex:1;}
+  .mitem .info .nm{font-weight:700;color:var(--ink);font-size:14.5px;}
+  .mitem .info .ds{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .mitem .info .pr{font-weight:700;color:var(--ink);margin-top:7px;font-size:14px;}
+  .add{width:40px;height:40px;border-radius:12px;background:var(--brand-soft);color:var(--brand-dark);border:none;font-size:20px;font-weight:700;cursor:pointer;}
+  .mitem.out{opacity:.55;}
+  .cartside{width:312px;flex-shrink:0;}
+  .cartbox{position:sticky;top:16px;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-md);overflow:hidden;}
+  .cartbox .hd{padding:15px 18px;border-bottom:1px solid var(--line);font-weight:700;color:var(--ink);}
+  .cartbox .bd{padding:16px 18px;}
+  .cline{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;margin-bottom:12px;}
+  .cline .q{background:var(--bg);border-radius:var(--pill);font-size:11.5px;font-weight:700;padding:2px 8px;margin-right:8px;color:var(--ink);}
+  .totrow{display:flex;justify-content:space-between;font-size:13px;margin:6px 0;}
+  .totrow.big{font-weight:800;color:var(--ink);font-size:16px;margin-top:10px;}
+
+  /* tracking */
+  .track{max-width:560px;}
+  .trkhead{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line);}
+  .trkhead .live{font-size:11.5px;font-weight:700;color:var(--success);display:flex;align-items:center;gap:6px;}
+  .trkhead .live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 0 rgba(22,163,74,.5);animation:pulse 1.6s infinite;}
+  @keyframes pulse{70%{box-shadow:0 0 0 7px rgba(22,163,74,0);}100%{box-shadow:0 0 0 0 rgba(22,163,74,0);}}
+  .steps{padding:22px;}
+  .stp{display:flex;gap:14px;padding-bottom:4px;}
+  .stp .rail{display:flex;flex-direction:column;align-items:center;}
+  .stp .mk{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;flex-shrink:0;}
+  .stp .ln{width:2px;flex:1;background:var(--line);margin:3px 0;}
+  .stp:last-child .ln{display:none;}
+  .stp.done .mk{background:var(--success);color:#fff;} .stp.done .ln{background:var(--success);}
+  .stp.now .mk{background:var(--brand);color:#fff;box-shadow:0 0 0 4px var(--brand-soft);}
+  .stp.todo .mk{background:#fff;border:2px solid var(--line);color:var(--muted);}
+  .stp .tx{padding-bottom:18px;}
+  .stp .tx .t1{font-weight:700;color:var(--ink);font-size:14px;}
+  .stp .tx .t2{font-size:12px;color:var(--muted);}
+
+  /* ===== DASHBOARD shell (restaurant + admin) ===== */
+  .shell{display:flex;min-height:560px;}
+  .sb{width:228px;flex-shrink:0;background:#16161A;color:#A1A1AA;padding:20px 14px;display:flex;flex-direction:column;}
+  .sb .brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;font-size:15px;padding:0 8px 18px;}
+  .sb .brand .dot{width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,#FF7A3C,#FF3D2E);display:grid;place-items:center;font-size:14px;}
+  .sb .navitem{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;font-size:13.5px;font-weight:500;margin-bottom:3px;cursor:pointer;color:#A1A1AA;}
+  .sb .navitem:hover{background:#222228;color:#fff;}
+  .sb .navitem.active{background:var(--brand);color:#fff;font-weight:600;}
+  .sb .navitem.soon{opacity:.4;}
+  .sb .who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:11px 8px;border-top:1px solid #2a2a30;}
+  .sb .who .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FFB07A,#FF6B6B);}
+  .sb .who .nm{color:#fff;font-size:13px;font-weight:600;} .sb .who .rl{font-size:11px;color:#71717A;}
+  .work{flex:1;background:#FAFAFB;min-width:0;}
+  .wtop{display:flex;align-items:center;justify-content:space-between;padding:20px 26px;border-bottom:1px solid var(--line);background:#fff;}
+  .wtop h2{font-size:19px;letter-spacing:-.01em;}
+  .wtop .sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .wbody{padding:24px 26px;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--sh-sm);}
+  .stat .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:18px;margin-bottom:12px;}
+  .stat .v{font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.02em;}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .stat .d{font-size:11.5px;font-weight:700;margin-top:8px;}
+
+  /* kanban */
+  .kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .kcol{background:#F2F2F4;border-radius:var(--r);padding:14px;}
+  .kcol .kh{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em;}
+  .kcol .kh .ct{background:#fff;border-radius:var(--pill);font-size:11px;padding:2px 9px;color:var(--muted);}
+  .ocard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--sh-sm);}
+  .ocard .or{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .ocard .id{font-weight:800;color:var(--ink);font-size:14px;}
+  .ocard .it{font-size:12.5px;color:var(--muted);line-height:1.5;}
+  .ocard .ft{display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+  .ocard .tot{font-weight:800;color:var(--ink);}
+
+  /* table */
+  .tablecard{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);}
+  table.t{width:100%;border-collapse:collapse;}
+  table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:13px 20px;border-bottom:1px solid var(--line);background:#FBFBFC;font-weight:700;}
+  table.t td{padding:14px 20px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--text);}
+  table.t tr:last-child td{border-bottom:none;}
+  table.t .rname{font-weight:700;color:var(--ink);display:flex;align-items:center;gap:10px;}
+  table.t .tav{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:15px;}
+
+  .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
+  .seg{display:flex;background:#F1F1F3;border-radius:var(--pill);padding:3px;}
+  .seg span{font-size:12.5px;font-weight:600;color:var(--muted);padding:7px 15px;border-radius:var(--pill);cursor:pointer;}
+  .seg span.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm);}
+
+  /* menu manager */
+  .mcat{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-sm);margin-bottom:16px;overflow:hidden;}
+  .mcat .ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);}
+  .mcat .ch .nm{font-weight:700;color:var(--ink);}
+  .mrow{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);}
+  .mrow:last-child{border-bottom:none;}
+  .mrow .nm{flex:1;font-weight:600;color:var(--ink);font-size:14px;}
+  .mrow .pr{font-weight:700;color:var(--ink);width:70px;}
+  .sw{width:42px;height:24px;border-radius:var(--pill);position:relative;cursor:pointer;}
+  .sw.on{background:var(--success);} .sw.off{background:#D4D4D8;}
+  .sw::after{content:"";position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s;}
+  .sw.on::after{right:3px;} .sw.off::after{left:3px;}
+
+  .panelcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-sm);padding:20px;}
+  .barchart{display:flex;align-items:flex-end;gap:12px;height:140px;padding-top:10px;}
+  .barchart .bar{flex:1;background:linear-gradient(180deg,#FF8A5C,#FF5A1F);border-radius:8px 8px 0 0;position:relative;}
+  .barchart .bar span{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted);}
+  .twocol{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;}
+
+  /* ===== auth ===== */
+  .auth{display:flex;min-height:540px;}
+  .auth .brandside{width:42%;background:linear-gradient(155deg,#1f1f23,#3a2014 55%,#5a2a12);color:#fff;padding:42px 38px;display:flex;flex-direction:column;}
+  .auth .brandside .lg{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;}
+  .auth .brandside .lg .dot{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#FF7A3C,#FF3D2E);display:grid;place-items:center;font-size:16px;}
+  .auth .brandside .big{margin-top:auto;}
+  .auth .brandside h2{font-size:27px;letter-spacing:-.02em;margin-bottom:10px;}
+  .auth .brandside p{color:#d4d4d8;font-size:14px;line-height:1.6;margin:0;}
+  .auth .brandside .quote{margin-top:24px;font-size:13px;color:#a1a1aa;border-left:3px solid var(--brand);padding-left:14px;}
+  .auth .formside{flex:1;padding:46px 50px;display:flex;flex-direction:column;justify-content:center;}
+  .auth .formside h3{font-size:23px;margin-bottom:4px;}
+  .auth .formside .lead{font-size:13.5px;color:var(--muted);margin:0 0 22px;}
+  .field{margin-bottom:15px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  .field input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--text);background:#fff;}
+  .field input::placeholder{color:#bcbcc3;}
+  .rolepick{display:flex;gap:10px;margin-bottom:16px;}
+  .rolepick .opt{flex:1;border:1.5px solid var(--line);border-radius:13px;padding:14px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--text);}
+  .rolepick .opt.sel{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-dark);}
+  .rolepick .opt .em{font-size:24px;display:block;margin-bottom:7px;}
+  .linkrow{font-size:13px;color:var(--muted);margin-top:18px;text-align:center;}
+  .linkrow a{color:var(--brand-dark);font-weight:700;text-decoration:none;}
+
+  /* ===== cart / checkout page ===== */
+  .pagewrap{padding:26px;}
+  .ph2{font-size:22px;color:var(--ink);letter-spacing:-.01em;margin:0;}
+  .psub{font-size:13px;color:var(--muted);margin:5px 0 22px;}
+  .splitcart{display:grid;grid-template-columns:1.55fr 1fr;gap:22px;align-items:start;}
+  .lineitem{display:flex;align-items:center;gap:14px;padding:13px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;background:#fff;}
+  .lineitem .info{flex:1;}
+  .lineitem .info .nm{font-weight:700;color:var(--ink);font-size:14.5px;}
+  .lineitem .info .ds{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .qty{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:var(--pill);padding:5px 9px;}
+  .qty button{width:26px;height:26px;border-radius:50%;border:none;background:var(--bg);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer;line-height:1;}
+  .qty .n{font-weight:700;color:var(--ink);min-width:12px;text-align:center;}
+  .lineprice{font-weight:700;color:var(--ink);width:60px;text-align:right;}
+  .remove{color:var(--muted);cursor:pointer;font-size:15px;}
+  .summary{border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-sm);padding:20px;background:#fff;}
+  .summary h4{font-size:15px;margin-bottom:16px;}
+  .addr{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;}
+  .addr.sel{border-color:var(--brand);background:var(--brand-soft);}
+  .addr .rd{width:18px;height:18px;border-radius:50%;border:2px solid #cfcfd6;margin-top:1px;flex-shrink:0;}
+  .addr.sel .rd{border-color:var(--brand);background:radial-gradient(circle,#fff 32%,var(--brand) 34%);}
+  .addr .t1{font-weight:700;color:var(--ink);font-size:13.5px;}
+  .addr .t2{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .paybox{border:1px solid var(--line);border-radius:14px;padding:15px;display:flex;align-items:center;gap:12px;}
+  .paybox .sc{font-weight:800;color:#635BFF;font-size:16px;letter-spacing:-.02em;}
+
+  /* ===== order history ===== */
+  .hsec{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:4px 0 12px;}
+  .hrow{display:flex;align-items:center;gap:16px;padding:15px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;background:#fff;box-shadow:var(--sh-sm);}
+  .hrow .info{flex:1;}
+  .hrow .info .nm{font-weight:700;color:var(--ink);font-size:14.5px;}
+  .hrow .info .ds{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .hrow .amt{font-weight:800;color:var(--ink);}
+
+  @media(max-width:900px){.grid,.stats,.kanban{grid-template-columns:1fr 1fr;}.twocol,.splitcart{grid-template-columns:1fr;}.cartside{display:none;}}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="mark"><span class="dot">🍔</span> FoodDash <span class="muted" style="font-weight:500;font-size:12px;">· design preview</span></div>
+  <div class="roletabs">
+    <button class="roletab active" data-role="customer">🍕 Customer</button>
+    <button class="roletab" data-role="restaurant">🧑‍🍳 Restaurant</button>
+    <button class="roletab" data-role="admin">🛡 Admin</button>
+    <button class="roletab" data-role="auth">🔑 Sign in</button>
+  </div>
+  <span class="spacer"></span>
+  <span class="tag">High-fidelity mockup</span>
+</header>
+
+<div class="canvas">
+
+<!-- =========================== CUSTOMER =========================== -->
+<div class="role show" id="role-customer">
+
+  <div class="scaption"><span class="n">1</span><h3>Discovery / Home</h3><span class="why">— the customer's entry point: browse approved restaurants</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app</span></div>
+    <div class="cnav">
+      <div class="logo"><span class="dot">🍔</span> FoodDash</div>
+      <div class="csearch">🔍 Search restaurants or dishes…</div>
+      <div class="iconbtn">🛒<span class="cnt">2</span></div>
+      <div class="avatar">M</div>
+    </div>
+    <div class="cbody">
+      <div class="hero">
+        <div style="flex:1;position:relative;z-index:1;">
+          <h2>Hungry? We've got you.</h2>
+          <p>Order from local favourites — delivered hot, tracked live.</p>
+          <button class="btn primary">Explore restaurants</button>
+        </div>
+        <div class="blob">🍜</div>
+      </div>
+      <div class="rowchips">
+        <span class="chip on">🍽 All</span><span class="chip">🍕 Pizza</span><span class="chip">🍔 Burgers</span>
+        <span class="chip">🍣 Sushi</span><span class="chip">🥘 Indian</span><span class="chip">🥗 Healthy</span><span class="chip">🍰 Dessert</span>
+      </div>
+      <div class="sectionhead"><h3>Popular near you</h3><span class="muted" style="font-size:13px;font-weight:600;">Sort: Fastest ⌄</span></div>
+      <div class="grid">
+        <div class="rcard"><div class="ph g1 food">🍕<span class="fee">$2 delivery</span><span class="fav">🤍</span></div>
+          <div class="meta"><div class="top"><span class="name">Mario's Pizzeria</span><span class="rate">⭐ 4.8</span></div><div class="sub">Pizza · Italian · 25–30 min</div></div></div>
+        <div class="rcard"><div class="ph g2 food">🍔<span class="fee">Free delivery</span><span class="fav">🤍</span></div>
+          <div class="meta"><div class="top"><span class="name">Burger Yard</span><span class="rate">⭐ 4.6</span></div><div class="sub">Burgers · American · 20 min</div></div></div>
+        <div class="rcard"><div class="ph g3 food">🥗<span class="fee">$1 delivery</span><span class="fav">🤍</span></div>
+          <div class="meta"><div class="top"><span class="name">Green Bowl</span><span class="rate">⭐ 4.9</span></div><div class="sub">Healthy · Salads · 15–20 min</div></div></div>
+        <div class="rcard"><div class="ph g4 food">🍣<span class="fee">$3 delivery</span><span class="fav">🤍</span></div>
+          <div class="meta"><div class="top"><span class="name">Sushi Go</span><span class="rate">⭐ 4.7</span></div><div class="sub">Sushi · Japanese · 35–40 min</div></div></div>
+        <div class="rcard"><div class="ph g5 food">🌮<span class="fee">Free delivery</span><span class="fav">🤍</span></div>
+          <div class="meta"><div class="top"><span class="name">Taco Loco</span><span class="rate">⭐ 4.5</span></div><div class="sub">Mexican · Tacos · 25 min</div></div></div>
+        <div class="rcard"><div class="ph g6 food">🍛<span class="fee">$2 delivery</span><span class="fav">🤍</span></div>
+          <div class="meta"><div class="top"><span class="name">Spice Hub</span><span class="rate">⭐ 4.8</span></div><div class="sub">Indian · Curry · 30 min</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">2</span><h3>Restaurant Detail</h3><span class="why">— browse the menu, build a single-restaurant cart</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/r/marios</span></div>
+    <div class="banner g1 food" style="font-size:64px;">🍕<span class="back">←</span></div>
+    <div class="rdhead">
+      <h2>Mario's Pizzeria</h2>
+      <div class="line"><span>⭐ 4.8 (1.2k)</span><span>· Pizza · Italian</span><span>· 25–30 min</span><span class="badge b-green">● Open now</span></div>
+    </div>
+    <div class="rdwrap">
+      <div class="menucol">
+        <span class="catpill">MAINS</span>
+        <div class="mitem"><div class="food g1" style="width:70px;height:70px;font-size:28px;">🍕</div>
+          <div class="info"><div class="nm">Margherita</div><div class="ds">San Marzano tomato, fresh mozzarella, basil</div><div class="pr">$9.00</div></div><button class="add">+</button></div>
+        <div class="mitem"><div class="food g2" style="width:70px;height:70px;font-size:28px;">🍕</div>
+          <div class="info"><div class="nm">Pepperoni</div><div class="ds">Double pepperoni, mozzarella, oregano</div><div class="pr">$11.50</div></div><button class="add">+</button></div>
+        <div class="mitem out"><div class="food g5" style="width:70px;height:70px;font-size:28px;">🥣</div>
+          <div class="info"><div class="nm">Minestrone Soup</div><div class="ds">Sold out</div><div class="pr">$5.00</div></div><span class="badge b-gray">Sold out</span></div>
+        <span class="catpill">DRINKS</span>
+        <div class="mitem"><div class="food g3" style="width:70px;height:70px;font-size:28px;">🥤</div>
+          <div class="info"><div class="nm">Coca-Cola</div><div class="ds">330ml can</div><div class="pr">$2.00</div></div><button class="add">+</button></div>
+      </div>
+      <div class="cartside">
+        <div class="cartbox">
+          <div class="hd">Your order 🛒</div>
+          <div class="bd">
+            <div class="cline"><span><span class="q">1×</span>Margherita</span><span>$9.00</span></div>
+            <div class="cline"><span><span class="q">1×</span>Coca-Cola</span><span>$2.00</span></div>
+            <div style="border-top:1px solid var(--line);margin:14px 0;"></div>
+            <div class="totrow"><span class="muted">Subtotal</span><span>$11.00</span></div>
+            <div class="totrow"><span class="muted">Delivery fee</span><span>$2.00</span></div>
+            <div class="totrow big"><span>Total</span><span>$13.00</span></div>
+            <button class="btn primary block" style="margin-top:16px;">Go to checkout · $13.00</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">3</span><h3>Cart</h3><span class="why">— review the single-restaurant order before paying</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/cart</span></div>
+    <div class="cnav">
+      <div class="logo"><span class="dot">🍔</span> FoodDash</div>
+      <div class="csearch">🔍 Search restaurants or dishes…</div>
+      <div class="iconbtn">🛒<span class="cnt">2</span></div>
+      <div class="avatar">M</div>
+    </div>
+    <div class="pagewrap">
+      <h2 class="ph2">Your cart</h2>
+      <div class="psub">From <b style="color:var(--ink);">Mario's Pizzeria</b> · <span style="color:var(--brand-dark);font-weight:600;">one restaurant per order</span></div>
+      <div class="splitcart">
+        <div>
+          <div class="lineitem"><div class="food g1" style="width:56px;height:56px;font-size:24px;">🍕</div>
+            <div class="info"><div class="nm">Margherita</div><div class="ds">San Marzano tomato, mozzarella, basil</div></div>
+            <div class="qty"><button>−</button><span class="n">1</span><button>+</button></div><span class="lineprice">$9.00</span><span class="remove">✕</span></div>
+          <div class="lineitem"><div class="food g3" style="width:56px;height:56px;font-size:24px;">🥤</div>
+            <div class="info"><div class="nm">Coca-Cola</div><div class="ds">330ml can</div></div>
+            <div class="qty"><button>−</button><span class="n">1</span><button>+</button></div><span class="lineprice">$2.00</span><span class="remove">✕</span></div>
+          <button class="btn ghost sm" style="margin-top:4px;">← Add more items</button>
+        </div>
+        <div class="summary">
+          <h4>Order summary</h4>
+          <div class="totrow"><span class="muted">Subtotal</span><span>$11.00</span></div>
+          <div class="totrow"><span class="muted">Delivery fee</span><span>$2.00</span></div>
+          <div class="totrow"><span class="muted">Service fee</span><span>$0.00</span></div>
+          <div style="border-top:1px solid var(--line);margin:12px 0;"></div>
+          <div class="totrow big"><span>Total</span><span>$13.00</span></div>
+          <button class="btn primary block" style="margin-top:16px;">Proceed to checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">4</span><h3>Checkout</h3><span class="why">— pick delivery address, pay securely via Stripe (test)</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/checkout</span></div>
+    <div class="cnav">
+      <div class="logo"><span class="dot">🍔</span> FoodDash</div>
+      <div class="csearch">🔍 Search restaurants or dishes…</div>
+      <div class="iconbtn">🛒<span class="cnt">2</span></div>
+      <div class="avatar">M</div>
+    </div>
+    <div class="pagewrap">
+      <h2 class="ph2">Checkout</h2>
+      <div class="psub">Almost there, Maya — confirm where it goes and pay.</div>
+      <div class="splitcart">
+        <div>
+          <h4 style="font-size:14px;color:var(--ink);margin:0 0 12px;">Delivery address</h4>
+          <div class="addr sel"><span class="rd"></span><div><div class="t1">🏠 Home · 12 Main St</div><div class="t2">City, 10001 · Leave at door</div></div></div>
+          <div class="addr"><span class="rd"></span><div><div class="t1">🏢 Work · 8 Oak Ave</div><div class="t2">City, 10018</div></div></div>
+          <button class="btn ghost sm" style="margin-bottom:22px;">+ Add new address</button>
+          <h4 style="font-size:14px;color:var(--ink);margin:0 0 12px;">Payment</h4>
+          <div class="paybox"><span class="sc">stripe</span><span style="font-size:13px;color:var(--text);">•••• •••• •••• 4242 · test mode</span><span class="badge b-blue" style="margin-left:auto;">Secure</span></div>
+        </div>
+        <div class="summary">
+          <h4>Order summary</h4>
+          <div class="cline"><span><span class="q">1×</span>Margherita</span><span>$9.00</span></div>
+          <div class="cline"><span><span class="q">1×</span>Coca-Cola</span><span>$2.00</span></div>
+          <div style="border-top:1px solid var(--line);margin:6px 0 12px;"></div>
+          <div class="totrow"><span class="muted">Subtotal</span><span>$11.00</span></div>
+          <div class="totrow"><span class="muted">Delivery fee</span><span>$2.00</span></div>
+          <div class="totrow big"><span>Total</span><span>$13.00</span></div>
+          <button class="btn primary block" style="margin-top:16px;">Pay $13.00</button>
+          <div class="muted" style="font-size:11.5px;text-align:center;margin-top:10px;">🔒 Redirects to Stripe's secure hosted checkout</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">5</span><h3>Order Tracking</h3><span class="why">— live (polled) status timeline after payment</span></div>
+  <div class="device track">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/orders/1042</span></div>
+    <div class="trkhead"><div><h2 style="font-size:18px;">Order #1042</h2><div class="muted" style="font-size:12.5px;margin-top:3px;">Mario's Pizzeria · $13.00</div></div><span class="live">Live</span></div>
+    <div class="steps">
+      <div class="stp done"><div class="rail"><div class="mk">✓</div><div class="ln"></div></div><div class="tx"><div class="t1">Order placed</div><div class="t2">12:01 · Payment confirmed</div></div></div>
+      <div class="stp done"><div class="rail"><div class="mk">✓</div><div class="ln"></div></div><div class="tx"><div class="t1">Accepted by restaurant</div><div class="t2">12:03</div></div></div>
+      <div class="stp now"><div class="rail"><div class="mk">●</div><div class="ln"></div></div><div class="tx"><div class="t1">Preparing your food</div><div class="t2">12:06 · In progress…</div></div></div>
+      <div class="stp todo"><div class="rail"><div class="mk">3</div><div class="ln"></div></div><div class="tx"><div class="t1">Out for delivery</div><div class="t2">—</div></div></div>
+      <div class="stp todo"><div class="rail"><div class="mk">4</div></div><div class="tx"><div class="t1">Delivered</div><div class="t2">Est. 12:30 · 📍 12 Main St, City</div></div></div>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">6</span><h3>Order History</h3><span class="why">— past &amp; active orders, with quick re-order</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/account/orders</span></div>
+    <div class="cnav">
+      <div class="logo"><span class="dot">🍔</span> FoodDash</div>
+      <div class="csearch">🔍 Search restaurants or dishes…</div>
+      <div class="iconbtn">🛒<span class="cnt">0</span></div>
+      <div class="avatar">M</div>
+    </div>
+    <div class="pagewrap">
+      <h2 class="ph2">My orders</h2>
+      <div class="psub">Track active orders or re-order a past favourite.</div>
+      <div class="hsec">Active</div>
+      <div class="hrow"><div class="food g1" style="width:50px;height:50px;font-size:22px;">🍕</div>
+        <div class="info"><div class="nm">Mario's Pizzeria</div><div class="ds">#1042 · 2 items · placed 12:01</div></div>
+        <span class="badge b-amber">Preparing</span><span class="amt">$13.00</span><button class="btn primary sm">Track</button></div>
+      <div class="hsec" style="margin-top:22px;">Past</div>
+      <div class="hrow"><div class="food g4" style="width:50px;height:50px;font-size:22px;">🍣</div>
+        <div class="info"><div class="nm">Sushi Go</div><div class="ds">#1031 · 4 items · 11 Jun</div></div>
+        <span class="badge b-green">Delivered</span><span class="amt">$22.00</span><button class="btn ghost sm">Re-order</button></div>
+      <div class="hrow"><div class="food g2" style="width:50px;height:50px;font-size:22px;">🍔</div>
+        <div class="info"><div class="nm">Burger Yard</div><div class="ds">#1024 · 1 item · 8 Jun</div></div>
+        <span class="badge b-green">Delivered</span><span class="amt">$14.50</span><button class="btn ghost sm">Re-order</button></div>
+      <div class="hrow" style="opacity:.72;"><div class="food g5" style="width:50px;height:50px;font-size:22px;">🌮</div>
+        <div class="info"><div class="nm">Taco Loco</div><div class="ds">#1020 · 3 items · 5 Jun</div></div>
+        <span class="badge b-gray">Cancelled</span><span class="amt">$9.00</span><button class="btn ghost sm">View</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================== RESTAURANT =========================== -->
+<div class="role" id="role-restaurant">
+
+  <div class="scaption"><span class="n">1</span><h3>Orders Dashboard</h3><span class="why">— the owner's home: live queue of paid orders</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/restaurant/orders</span></div>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="dot">🍔</span> FoodDash</div>
+        <div class="navitem active">📋 Orders</div>
+        <div class="navitem">🍽 Menu</div>
+        <div class="navitem">🏪 Profile &amp; Hours</div>
+        <div class="navitem soon">📊 Analytics · soon</div>
+        <div class="who"><div class="av"></div><div><div class="nm">Sam</div><div class="rl">Mario's Pizzeria</div></div></div>
+      </aside>
+      <section class="work">
+        <div class="wtop"><div><h2>Orders</h2><div class="sub">Live queue · polls every few seconds</div></div><button class="btn ghost sm">🔔 Sound on</button></div>
+        <div class="wbody">
+          <div class="stats">
+            <div class="stat"><div class="ic" style="background:var(--info-soft);">🆕</div><div class="v">3</div><div class="l">New orders</div></div>
+            <div class="stat"><div class="ic" style="background:var(--warn-soft);">🍳</div><div class="v">5</div><div class="l">In progress</div></div>
+            <div class="stat"><div class="ic" style="background:var(--success-soft);">✅</div><div class="v">28</div><div class="l">Completed today</div></div>
+            <div class="stat"><div class="ic" style="background:var(--brand-soft);">💰</div><div class="v">$642</div><div class="l">Revenue today</div></div>
+          </div>
+          <div class="kanban">
+            <div class="kcol"><div class="kh">New <span class="ct">3</span></div>
+              <div class="ocard"><div class="or"><span class="id">#1042</span><span class="badge b-blue">Paid</span></div><div class="it">1× Margherita, 1× Coca-Cola</div><div class="ft"><span class="tot">$13.00</span><button class="btn primary sm">Accept</button></div></div>
+              <div class="ocard"><div class="or"><span class="id">#1043</span><span class="badge b-blue">Paid</span></div><div class="it">2× Pepperoni</div><div class="ft"><span class="tot">$23.00</span><button class="btn primary sm">Accept</button></div></div>
+            </div>
+            <div class="kcol"><div class="kh">In progress <span class="ct">2</span></div>
+              <div class="ocard"><div class="or"><span class="id">#1039</span><span class="badge b-amber">Preparing</span></div><div class="it">1× Margherita, 2× Coke</div><div class="ft"><span class="tot">$20.00</span><button class="btn ghost sm">Out for delivery →</button></div></div>
+              <div class="ocard"><div class="or"><span class="id">#1040</span><span class="badge b-blue">Accepted</span></div><div class="it">3× Pepperoni</div><div class="ft"><span class="tot">$34.50</span><button class="btn ghost sm">Start preparing</button></div></div>
+            </div>
+            <div class="kcol"><div class="kh">Completed <span class="ct">28</span></div>
+              <div class="ocard"><div class="or"><span class="id">#1031</span><span class="badge b-green">Delivered</span></div><div class="it">1× Margherita</div><div class="ft"><span class="tot">$22.00</span><button class="btn ghost sm">View</button></div></div>
+              <div class="ocard" style="opacity:.7;"><div class="or"><span class="id">#1028</span><span class="badge b-red">Rejected</span></div><div class="it">Out of stock</div><div class="ft"><span class="tot">$9.00</span><button class="btn ghost sm">View</button></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">2</span><h3>Menu Manager</h3><span class="why">— CRUD categories &amp; items, toggle availability</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/restaurant/menu</span></div>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="dot">🍔</span> FoodDash</div>
+        <div class="navitem">📋 Orders</div>
+        <div class="navitem active">🍽 Menu</div>
+        <div class="navitem">🏪 Profile &amp; Hours</div>
+        <div class="navitem soon">📊 Analytics · soon</div>
+        <div class="who"><div class="av"></div><div><div class="nm">Sam</div><div class="rl">Mario's Pizzeria</div></div></div>
+      </aside>
+      <section class="work">
+        <div class="wtop"><div><h2>Menu</h2><div class="sub">Toggle availability to hide a dish without deleting it</div></div><button class="btn primary sm">+ Add category</button></div>
+        <div class="wbody">
+          <div class="mcat">
+            <div class="ch"><span class="nm">🍕 Mains</span><button class="btn ghost sm">+ Add item</button></div>
+            <div class="mrow"><div class="food g1" style="width:46px;height:46px;font-size:20px;">🍕</div><span class="nm">Margherita</span><span class="pr">$9.00</span><span class="sw on"></span><button class="btn ghost sm">Edit</button></div>
+            <div class="mrow"><div class="food g2" style="width:46px;height:46px;font-size:20px;">🍕</div><span class="nm">Pepperoni</span><span class="pr">$11.50</span><span class="sw on"></span><button class="btn ghost sm">Edit</button></div>
+            <div class="mrow"><div class="food g5" style="width:46px;height:46px;font-size:20px;">🥣</div><span class="nm" style="color:var(--muted);">Minestrone Soup</span><span class="pr">$5.00</span><span class="sw off"></span><button class="btn ghost sm">Edit</button></div>
+          </div>
+          <div class="mcat">
+            <div class="ch"><span class="nm">🥤 Drinks</span><button class="btn ghost sm">+ Add item</button></div>
+            <div class="mrow"><div class="food g3" style="width:46px;height:46px;font-size:20px;">🥤</div><span class="nm">Coca-Cola</span><span class="pr">$2.00</span><span class="sw on"></span><button class="btn ghost sm">Edit</button></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- =========================== ADMIN =========================== -->
+<div class="role" id="role-admin">
+
+  <div class="scaption"><span class="n">1</span><h3>Platform Overview</h3><span class="why">— health at a glance, with pending approvals front and centre</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/admin</span></div>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="dot">🛡</span> FoodDash</div>
+        <div class="navitem active">📊 Overview</div>
+        <div class="navitem">🏪 Restaurants</div>
+        <div class="navitem">👥 Users</div>
+        <div class="navitem">🧾 Orders</div>
+        <div class="who"><div class="av" style="background:linear-gradient(135deg,#9CB0FF,#6B7BFF);"></div><div><div class="nm">Riya</div><div class="rl">Platform Admin</div></div></div>
+      </aside>
+      <section class="work">
+        <div class="wtop"><div><h2>Platform overview</h2><div class="sub">Tuesday, 13 June · last 24 hours</div></div><button class="btn ghost sm">Export</button></div>
+        <div class="wbody">
+          <div class="stats">
+            <div class="stat"><div class="ic" style="background:var(--info-soft);">🏪</div><div class="v">24</div><div class="l">Active restaurants</div><div class="d b-green" style="color:var(--success);">▲ 2 this week</div></div>
+            <div class="stat"><div class="ic" style="background:var(--brand-soft);">🧾</div><div class="v">58</div><div class="l">Orders today</div><div class="d" style="color:var(--success);">▲ 12%</div></div>
+            <div class="stat"><div class="ic" style="background:var(--success-soft);">💰</div><div class="v">$1,240</div><div class="l">Revenue (test)</div><div class="d" style="color:var(--success);">▲ 8%</div></div>
+            <div class="stat" style="border-color:#ffd2bd;background:var(--brand-soft);"><div class="ic" style="background:#fff;">⏳</div><div class="v">3</div><div class="l">Pending approvals</div><div class="d" style="color:var(--brand-dark);">Needs review →</div></div>
+          </div>
+          <div class="twocol">
+            <div class="panelcard"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><h3 style="font-size:15px;">Orders this week</h3><span class="muted" style="font-size:12px;">last 7 days</span></div>
+              <div class="barchart">
+                <div class="bar" style="height:55%;"><span>Mon</span></div><div class="bar" style="height:70%;"><span>Tue</span></div>
+                <div class="bar" style="height:45%;"><span>Wed</span></div><div class="bar" style="height:85%;"><span>Thu</span></div>
+                <div class="bar" style="height:65%;"><span>Fri</span></div><div class="bar" style="height:100%;"><span>Sat</span></div>
+                <div class="bar" style="height:78%;"><span>Sun</span></div>
+              </div>
+            </div>
+            <div class="panelcard"><h3 style="font-size:15px;margin-bottom:14px;">Recent activity</h3>
+              <div style="font-size:13px;line-height:1;">
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;"><span class="tav g1">🍕</span><div><div style="color:var(--ink);font-weight:600;">Order #1042 · Preparing</div><div class="muted" style="font-size:12px;margin-top:2px;">Mario's · $13.00</div></div></div>
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;"><span class="tav g3">🥗</span><div><div style="color:var(--ink);font-weight:600;">New restaurant applied</div><div class="muted" style="font-size:12px;margin-top:2px;">Green Bowl · pending</div></div></div>
+                <div style="display:flex;gap:10px;align-items:center;"><span class="tav g4">🍣</span><div><div style="color:var(--ink);font-weight:600;">Order #1041 · Delivered</div><div class="muted" style="font-size:12px;margin-top:2px;">Sushi Go · $20.00</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">2</span><h3>Restaurants — Approvals</h3><span class="why">— gatekeep supply: approve / suspend restaurants</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/admin/restaurants</span></div>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="dot">🛡</span> FoodDash</div>
+        <div class="navitem">📊 Overview</div>
+        <div class="navitem active">🏪 Restaurants</div>
+        <div class="navitem">👥 Users</div>
+        <div class="navitem">🧾 Orders</div>
+        <div class="who"><div class="av" style="background:linear-gradient(135deg,#9CB0FF,#6B7BFF);"></div><div><div class="nm">Riya</div><div class="rl">Platform Admin</div></div></div>
+      </aside>
+      <section class="work">
+        <div class="wtop"><div><h2>Restaurants</h2><div class="sub">24 total · 3 awaiting approval</div></div><div class="csearch" style="max-width:240px;padding:8px 14px;">🔍 Search</div></div>
+        <div class="wbody">
+          <div class="toolbar">
+            <div class="seg"><span>All</span><span class="on">Pending</span><span>Approved</span><span>Suspended</span></div>
+          </div>
+          <div class="tablecard">
+            <table class="t">
+              <thead><tr><th>Restaurant</th><th>Cuisine</th><th>Applied</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+              <tbody>
+                <tr><td><span class="rname"><span class="tav g1">🍕</span>Mario's Pizzeria</span></td><td>Pizza</td><td>2 hours ago</td><td><span class="badge b-amber">Pending</span></td>
+                  <td style="text-align:right;"><button class="btn ghost sm">Review</button> <button class="btn primary sm">Approve</button></td></tr>
+                <tr><td><span class="rname"><span class="tav g3">🥗</span>Green Bowl</span></td><td>Healthy</td><td>5 hours ago</td><td><span class="badge b-amber">Pending</span></td>
+                  <td style="text-align:right;"><button class="btn ghost sm">Review</button> <button class="btn primary sm">Approve</button></td></tr>
+                <tr><td><span class="rname"><span class="tav g4">🍣</span>Sushi Go</span></td><td>Japanese</td><td>1 day ago</td><td><span class="badge b-green">Approved</span></td>
+                  <td style="text-align:right;"><button class="btn ghost sm">View</button> <button class="btn ghost sm">Suspend</button></td></tr>
+                <tr><td><span class="rname"><span class="tav g5">🌮</span>Taco Loco</span></td><td>Mexican</td><td>3 days ago</td><td><span class="badge b-red">Suspended</span></td>
+                  <td style="text-align:right;"><button class="btn ghost sm">View</button> <button class="btn ghost sm">Restore</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- =========================== AUTH (shared) =========================== -->
+<div class="role" id="role-auth">
+  <div class="scaption"><span class="n">1</span><h3>Sign In</h3><span class="why">— shared entry; redirects by role after login</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/signin</span></div>
+    <div class="auth">
+      <div class="brandside">
+        <div class="lg"><span class="dot">🍔</span> FoodDash</div>
+        <div class="big">
+          <h2>Welcome back.</h2>
+          <p>Order from local favourites, manage your restaurant, or run the platform — all from one account.</p>
+          <div class="quote">"Food ordered in under two minutes, with status I can actually trust."</div>
+        </div>
+      </div>
+      <div class="formside">
+        <h3>Sign in</h3>
+        <p class="lead">Enter your details to continue.</p>
+        <div class="field"><label>Email</label><input value="maya@example.com" /></div>
+        <div class="field"><label>Password</label><input type="password" value="password123" /></div>
+        <button class="btn primary block" style="margin-top:6px;">Sign in</button>
+        <div class="linkrow">New here? <a href="#">Create an account</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scaption"><span class="n">2</span><h3>Sign Up</h3><span class="why">— choose Customer or Restaurant; restaurants start PENDING</span></div>
+  <div class="device">
+    <div class="chrome"><i></i><i></i><i></i><span class="url">fooddash.app/signup</span></div>
+    <div class="auth">
+      <div class="brandside">
+        <div class="lg"><span class="dot">🍔</span> FoodDash</div>
+        <div class="big">
+          <h2>Join FoodDash.</h2>
+          <p>Order in a few taps as a customer, or bring your restaurant online and start taking orders today.</p>
+        </div>
+      </div>
+      <div class="formside">
+        <h3>Create account</h3>
+        <p class="lead">I want to join as a…</p>
+        <div class="rolepick">
+          <div class="opt sel"><span class="em">🍕</span>Customer</div>
+          <div class="opt"><span class="em">🧑‍🍳</span>Restaurant</div>
+        </div>
+        <div class="field"><label>Full name</label><input placeholder="Maya Patel" /></div>
+        <div class="field"><label>Email</label><input placeholder="you@example.com" /></div>
+        <div class="field"><label>Password</label><input type="password" placeholder="At least 8 characters" /></div>
+        <button class="btn primary block" style="margin-top:6px;">Create account</button>
+        <div class="linkrow">Already have an account? <a href="#">Sign in</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  function selectRole(role){
+    document.querySelectorAll(".roletab").forEach(x=>x.classList.toggle("active",x.dataset.role===role));
+    document.querySelectorAll(".role").forEach(r=>r.classList.remove("show"));
+    const el=document.getElementById("role-"+role);
+    if(el) el.classList.add("show");
+  }
+  document.querySelectorAll(".roletab").forEach(t=>t.addEventListener("click",()=>{
+    selectRole(t.dataset.role);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }));
+  // allow deep-linking a role via #restaurant / #admin (used for previews)
+  const h=location.hash.replace("#","");
+  if(["customer","restaurant","admin","auth"].includes(h)) selectRole(h);
+</script>
+</body>
+</html>
