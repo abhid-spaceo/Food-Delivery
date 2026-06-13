@@ -84,26 +84,40 @@ async function main() {
 
   const DELIVERY_FEE_CENTS = 299;
 
-  // Ensure a PAID PLACED order exists (feeds the restaurant queue "New" column
-  // and the restaurant E2E). The E2E advances it to READY, so re-running the
-  // seed restores a fresh PLACED order. Additive — never deletes existing rows.
-  const placedCount = await prisma.order.count({ where: { status: "PLACED" } });
-  if (placedCount === 0) {
-    const placedSubtotal = 900 * 2;
-    await prisma.order.create({
-      data: {
-        customerId: customer.id,
-        restaurantId: restaurant.id,
-        status: "PLACED",
-        subtotalCents: placedSubtotal,
-        deliveryFeeCents: DELIVERY_FEE_CENTS,
-        totalCents: placedSubtotal + DELIVERY_FEE_CENTS,
-        addressLine: "12 MG Road, Bengaluru",
-        items: { create: [{ name: "Margherita", priceCents: 900, quantity: 2 }] },
-        payment: { create: { status: "PAID" } },
-        events: { create: [{ from: null, to: "PLACED", byUserId: customer.id }] },
-      },
+  // --- Second restaurant (Spice Hub) + owner ---
+  const owner2 = await prisma.user.upsert({
+    where: { email: "owner2@demo.test" },
+    update: {},
+    create: { email: "owner2@demo.test", name: "Sole", role: "RESTAURANT", passwordHash },
+  });
+  const restaurant2 = await prisma.restaurant.upsert({
+    where: { ownerId: owner2.id },
+    update: {},
+    create: { ownerId: owner2.id, name: "Spice Hub", cuisine: "Indian", status: "APPROVED", hours: "Mon–Sun 11:00–23:00", deliveryArea: "Downtown" },
+  });
+  const cat2 = await prisma.menuCategory.count({ where: { restaurantId: restaurant2.id } });
+  if (cat2 === 0) {
+    await prisma.menuCategory.create({
+      data: { restaurantId: restaurant2.id, name: "Curries", sortOrder: 0,
+        items: { create: [{ name: "Paneer Butter Masala", description: "Creamy tomato", priceCents: 1200 }] } },
     });
+  }
+
+  // Ensure Mario's has at least 3 PAID PLACED orders (accept + reject consume
+  // two; one remains for read-only tests; top-up makes the suite re-runnable).
+  const marioPlaced = await prisma.order.count({
+    where: { restaurantId: restaurant.id, status: "PLACED", payment: { status: "PAID" } },
+  });
+  for (let i = marioPlaced; i < 3; i++) {
+    const sub = 900 * 2;
+    await prisma.order.create({ data: {
+      customerId: customer.id, restaurantId: restaurant.id, status: "PLACED",
+      subtotalCents: sub, deliveryFeeCents: DELIVERY_FEE_CENTS, totalCents: sub + DELIVERY_FEE_CENTS,
+      addressLine: "12 MG Road, Bengaluru",
+      items: { create: [{ name: "Margherita", priceCents: 900, quantity: 2 }] },
+      payment: { create: { status: "PAID" } },
+      events: { create: [{ from: null, to: "PLACED", byUserId: customer.id }] },
+    }});
   }
 
   // Ensure a PAID, unclaimed READY order exists (feeds the Phase 3 driver pool).
@@ -136,8 +150,41 @@ async function main() {
     });
   }
 
+  // Spice Hub: ensure at least 1 PAID PLACED order (cross-tenant isolation test).
+  const spicePlaced = await prisma.order.count({
+    where: { restaurantId: restaurant2.id, status: "PLACED", payment: { status: "PAID" } },
+  });
+  if (spicePlaced === 0) {
+    const sub = 1200;
+    await prisma.order.create({ data: {
+      customerId: customer.id, restaurantId: restaurant2.id, status: "PLACED",
+      subtotalCents: sub, deliveryFeeCents: DELIVERY_FEE_CENTS, totalCents: sub + DELIVERY_FEE_CENTS,
+      addressLine: "5 Curry Street, Bengaluru",
+      items: { create: [{ name: "Paneer Butter Masala", priceCents: 1200, quantity: 1 }] },
+      payment: { create: { status: "PAID" } },
+      events: { create: [{ from: null, to: "PLACED", byUserId: customer.id }] },
+    }});
+  }
+
+  // Unpaid PLACED order for Mario's with sentinel total $77.77 (payment-gate
+  // test: this order must NEVER appear in the restaurant queue).
+  const SENTINEL = 7777;
+  const unpaid = await prisma.order.count({
+    where: { restaurantId: restaurant.id, totalCents: SENTINEL, payment: { status: "PENDING" } },
+  });
+  if (unpaid === 0) {
+    await prisma.order.create({ data: {
+      customerId: customer.id, restaurantId: restaurant.id, status: "PLACED",
+      subtotalCents: SENTINEL, deliveryFeeCents: 0, totalCents: SENTINEL,
+      addressLine: "99 Unpaid Lane, Bengaluru",
+      items: { create: [{ name: "Unpaid Test Pizza", priceCents: SENTINEL, quantity: 1 }] },
+      payment: { create: { status: "PENDING" } },
+      events: { create: [{ from: null, to: "PLACED", byUserId: customer.id }] },
+    }});
+  }
+
   console.log(
-    `Seeded admin@demo.test, owner@demo.test, customer@demo.test, driver@demo.test (password: ${SEED_PASSWORD})`,
+    `Seeded admin@demo.test, owner@demo.test, owner2@demo.test, customer@demo.test, driver@demo.test (password: ${SEED_PASSWORD})`,
   );
 }
 
