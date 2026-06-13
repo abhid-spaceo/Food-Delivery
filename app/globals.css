@@ -23,6 +23,29 @@
   --border: #ecebf0;
   --input: #ecebf0;
   --ring: #ff3b5c;
+
+  /* --- Semantic color tokens (additive) --- */
+  --success: #12b886;
+  --success-soft: #e6f8f1;
+  --warning: #e8890c;
+  --warning-soft: #fdf1df;
+  --info: #3b82f6;
+  --info-soft: #eaf2fe;
+  --brand-dark: #e82e4d;
+  --brand-soft: #ffedf0;
+
+  /* Brand gradient */
+  --gradient-brand: linear-gradient(135deg, #ff6b81, #ff2e54);
+
+  /* 3-tier shadow scale */
+  --shadow-sm: 0 2px 10px rgba(20, 19, 26, 0.06);
+  --shadow-card: 0 4px 20px rgba(20, 19, 26, 0.1);
+  --shadow-overlay: 0 12px 34px rgba(20, 19, 26, 0.12);
+
+  /* Motion tokens */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur: 250ms;
 }
 
 .dark {
@@ -44,6 +67,16 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+
+  /* --- Semantic color tokens — dark equivalents --- */
+  --success: #0fa872;
+  --success-soft: #0c2820;
+  --warning: #d47a08;
+  --warning-soft: #2a1e08;
+  --info: #2563eb;
+  --info-soft: #0f1d3a;
+  --brand-dark: #ff2e54;
+  --brand-soft: #3a0a12;
 }
 
 @theme inline {
@@ -71,6 +104,16 @@
   --color-ring: var(--ring);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+
+  /* Semantic tokens exposed as Tailwind utilities */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-soft: var(--brand-soft);
 }
 
 @layer base {
