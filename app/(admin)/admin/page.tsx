@@ -18,6 +18,8 @@ export default async function AdminOverviewPage() {
     ordersToday,
     paidAgg,
     recentOrders,
+    totalDrivers,
+    pendingDrivers,
   ] = await Promise.all([
     prisma.restaurant.count(),
     prisma.restaurant.count({ where: { status: "PENDING" } }),
@@ -33,6 +35,8 @@ export default async function AdminOverviewPage() {
       orderBy: { createdAt: "desc" },
       include: { restaurant: { select: { name: true } } },
     }),
+    prisma.driver.count(),
+    prisma.driver.count({ where: { status: "PENDING" } }),
   ]);
 
   const revenueCents = paidAgg._sum.totalCents ?? 0;
@@ -47,6 +51,8 @@ export default async function AdminOverviewPage() {
         <StatCard label="Total orders" value={totalOrders} />
         <StatCard label="Orders today" value={ordersToday} />
         <StatCard label="Test revenue (paid)" value={formatCents(revenueCents)} />
+        <StatCard label="Drivers" value={totalDrivers} />
+        <StatCard label="Pending drivers" value={pendingDrivers} />
       </div>
 
       <section className="space-y-3">
