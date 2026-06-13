@@ -17,7 +17,7 @@ export function THead({ className, ...props }: React.ComponentProps<"thead">) {
 
 export function TH({ className, ...props }: React.ComponentProps<"th">) {
   return (
-    <th className={cn("px-4 py-2 font-medium text-muted-foreground", className)} {...props} />
+    <th className={cn("px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground", className)} {...props} />
   );
 }
 
@@ -26,7 +26,7 @@ export function TBody({ className, ...props }: React.ComponentProps<"tbody">) {
 }
 
 export function TR({ className, ...props }: React.ComponentProps<"tr">) {
-  return <tr className={cn("hover:bg-muted/30", className)} {...props} />;
+  return <tr className={cn("transition-colors hover:bg-muted/50", className)} {...props} />;
 }
 
 export function TD({ className, ...props }: React.ComponentProps<"td">) {
