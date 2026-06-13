@@ -12,6 +12,7 @@ const TONE: Record<string, string> = {
   PLACED: "bg-blue-100 text-blue-800",
   ACCEPTED: "bg-indigo-100 text-indigo-800",
   PREPARING: "bg-amber-100 text-amber-800",
+  READY: "bg-teal-100 text-teal-800",
   OUT_FOR_DELIVERY: "bg-purple-100 text-purple-800",
   DELIVERED: "bg-green-100 text-green-800",
   REJECTED: "bg-red-100 text-red-800",
@@ -19,6 +20,7 @@ const TONE: Record<string, string> = {
   // Roles (reused as plain pills)
   CUSTOMER: "bg-gray-100 text-gray-700",
   RESTAURANT: "bg-sky-100 text-sky-800",
+  DRIVER: "bg-teal-100 text-teal-800",
   ADMIN: "bg-fuchsia-100 text-fuchsia-800",
 };
 

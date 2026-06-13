@@ -14,6 +14,7 @@ const FILTER_OPTIONS = [
   { label: "Placed", value: "PLACED" },
   { label: "Accepted", value: "ACCEPTED" },
   { label: "Preparing", value: "PREPARING" },
+  { label: "Ready", value: "READY" },
   { label: "Out for delivery", value: "OUT_FOR_DELIVERY" },
   { label: "Delivered", value: "DELIVERED" },
   { label: "Rejected", value: "REJECTED" },
