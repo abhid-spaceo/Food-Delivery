@@ -14,6 +14,10 @@ import { assertClaimed } from "@/lib/orders/claim";
 export async function claimOrder(orderId: string): Promise<void> {
   const { driver, userId } = await requireApprovedDriver();
 
+  if (!driver.isOnline) {
+    throw new Error("You must be online to claim orders.");
+  }
+
   await prisma.$transaction(async (tx) => {
     const { count } = await tx.order.updateMany({
       where: { id: orderId, status: "READY", driverId: null },

@@ -41,6 +41,8 @@ export default async function DriverOrderPage({ params }: { params: Promise<{ id
     order.driverId === null &&
     order.payment?.status === "PAID";
   const isMineActive = order.driverId === driver.id && order.status === "OUT_FOR_DELIVERY";
+  // A claimable order is hidden behind an "go online" note when driver is offline.
+  const isOfflineBlocked = isClaimable && !driver.isOnline;
 
   return (
     <DriverShell title={`Order ${orderRef(order.id)}`}>
@@ -130,7 +132,12 @@ export default async function DriverOrderPage({ params }: { params: Promise<{ id
         {/* Action */}
         <Card>
           <CardContent className="pt-6">
-            {isClaimable ? (
+            {isOfflineBlocked ? (
+              /* Driver is offline — show a note instead of the claim button */
+              <p className="text-sm text-muted-foreground">
+                Go online to claim this order.
+              </p>
+            ) : isClaimable ? (
               <div className="space-y-3">
                 <ClaimButton orderId={order.id} />
                 {/* Race-condition heads-up (visual only — informational note) */}

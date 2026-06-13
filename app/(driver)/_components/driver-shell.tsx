@@ -1,23 +1,24 @@
 // app/(driver)/_components/driver-shell.tsx
 import { AppHeader } from "@/components/app-header";
 import { DriverNav } from "@/app/(driver)/_components/driver-nav";
+import { OnlineToggle } from "@/app/(driver)/_components/online-toggle";
+import { getDriver } from "@/app/(driver)/_lib/driver";
 
-// Shell for all driver screens: shared AppHeader, an "Online" status pill
-// (visual-only; functional toggle is Phase 5), a nav rail, and a content slot.
-export function DriverShell({ title, children }: { title: string; children: React.ReactNode }) {
+// Shell for all driver screens: shared AppHeader, a real online/offline toggle
+// pill (Phase 5), a nav rail, and a content slot.
+export async function DriverShell({ title, children }: { title: string; children: React.ReactNode }) {
+  const driver = await getDriver();
+  const isOnline = driver?.isOnline ?? false;
+
   return (
     <div>
-      {/* Top bar: shared app header + static online status pill */}
+      {/* Top bar: shared app header + real online/offline toggle */}
       <div className="sticky top-0 z-40 flex items-center border-b bg-card/90 backdrop-blur-md">
         <div className="flex-1">
           <AppHeader title="Driver" />
         </div>
-        {/* Static "Online" pill — visual only. Toggle is a Phase 5 feature. */}
         <div className="mr-4 shrink-0">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--success)] bg-[var(--success-soft)] px-3 py-1 text-xs font-semibold text-[var(--success)]">
-            <span className="size-2 rounded-full bg-[var(--success)]" aria-hidden="true" />
-            Online
-          </span>
+          <OnlineToggle isOnline={isOnline} />
         </div>
       </div>
 

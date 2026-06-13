@@ -73,12 +73,13 @@ async function main() {
   });
   await prisma.driver.upsert({
     where: { userId: driverUser.id },
-    update: {},
+    update: { isOnline: true },
     create: {
       userId: driverUser.id,
       name: "Dev",
       phone: "+91 90000 00000",
       status: "APPROVED",
+      isOnline: true,
     },
   });
 
@@ -90,8 +91,8 @@ async function main() {
   });
   await prisma.driver.upsert({
     where: { userId: driverUser2.id },
-    update: {},
-    create: { userId: driverUser2.id, name: "Dani", phone: "+91 90000 00001", status: "APPROVED" },
+    update: { isOnline: true },
+    create: { userId: driverUser2.id, name: "Dani", phone: "+91 90000 00001", status: "APPROVED", isOnline: true },
   });
 
   const DELIVERY_FEE_CENTS = 299;
