@@ -71,16 +71,19 @@ export async function signUpAction(
   if (existing) return { error: "An account with this email already exists" };
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: { name, email, passwordHash, role },
-  });
 
-  // A driver needs a Driver profile (starts PENDING; an admin approves it
-  // before the driver can claim orders). Restaurants build their profile on a
-  // dedicated onboarding screen, so only DRIVER gets an auto-created row here.
-  if (role === "DRIVER") {
-    await prisma.driver.create({ data: { userId: user.id, name } });
-  }
+  // Create the user — and, for a driver, the PENDING Driver profile — atomically,
+  // so a mid-way failure can't orphan a DRIVER user with no Driver row. (An admin
+  // approves the driver before they can claim orders; restaurants build their
+  // profile on a dedicated onboarding screen, so only DRIVER auto-creates here.)
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: { name, email, passwordHash, role },
+    });
+    if (role === "DRIVER") {
+      await tx.driver.create({ data: { userId: user.id, name } });
+    }
+  });
 
   try {
     await signIn("credentials", { email, password, redirect: false });
