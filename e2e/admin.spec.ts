@@ -96,3 +96,37 @@ test("admin orders page handles bogus status filter without crashing", async ({ 
   // The table renders a <TR> per order; we use a loose locator for any row.
   await expect(page.locator("table tbody tr").first()).toBeVisible();
 });
+
+// Phase 5c — admin force-cancel. Picks the first non-terminal order from the
+// PLACED filter (seed guarantees at least 3 PAID PLACED orders), clicks
+// "Force cancel", then confirms the badge on that row changes to CANCELLED.
+//
+// Uses a SINGLE page/context throughout — a second context would clobber the
+// admin session cookie. Reassign-driver is not covered here because it requires
+// a known OUT_FOR_DELIVERY order in a deterministic state; the seed does not
+// guarantee one after each reseed (the READY order is unclaimed, not in-flight).
+//
+// Does NOT cover: force-cancelling from ACCEPTED/PREPARING/READY/OUT_FOR_DELIVERY
+// directly (state-machine coverage for those edges lives in Vitest unit tests);
+// reassign-driver UI; cancel of an already-CANCELLED order (blocked by state machine).
+test("admin can force-cancel a PLACED order", async ({ page }) => {
+  await signInAsAdmin(page);
+
+  // Filter to PLACED so we have a predictable, non-terminal row.
+  await page.goto("/admin/orders?status=PLACED");
+  await expect(page.getByRole("heading", { name: "Orders" })).toBeVisible();
+
+  // Grab the first order row — seed guarantees ≥3 PAID PLACED orders.
+  const firstRow = page.locator("table tbody tr").first();
+  await expect(firstRow).toBeVisible();
+
+  // Click "Force cancel" on that row.
+  await firstRow.getByRole("button", { name: "Force cancel" }).click();
+
+  // After the server action + revalidatePath the page re-renders. The row
+  // that was PLACED is now CANCELLED, so the badge text "CANCELLED" must appear.
+  // We assert on the page level (not the row) because the row may re-sort after
+  // status change; filtering to PLACED hides it, so we navigate to all orders.
+  await page.goto("/admin/orders");
+  await expect(page.getByText("CANCELLED").first()).toBeVisible();
+});
