@@ -82,15 +82,15 @@ async function main() {
     },
   });
 
-  // Two PAID orders so flows are exercisable without running checkout:
-  //  - one PLACED  -> the restaurant queue's "New" column / restaurant E2E
-  //  - one READY (driverId=null) -> the driver pickup pool (Phase 3)
-  // Idempotent: only seed orders if there are none yet.
   const DELIVERY_FEE_CENTS = 299;
-  const orderCount = await prisma.order.count();
-  if (orderCount === 0) {
+
+  // Ensure a PAID PLACED order exists (feeds the restaurant queue "New" column
+  // and the restaurant E2E). The E2E advances it to READY, so re-running the
+  // seed restores a fresh PLACED order. Additive — never deletes existing rows.
+  const placedCount = await prisma.order.count({ where: { status: "PLACED" } });
+  if (placedCount === 0) {
     const placedSubtotal = 900 * 2;
-    const placed = await prisma.order.create({
+    await prisma.order.create({
       data: {
         customerId: customer.id,
         restaurantId: restaurant.id,
@@ -99,16 +99,20 @@ async function main() {
         deliveryFeeCents: DELIVERY_FEE_CENTS,
         totalCents: placedSubtotal + DELIVERY_FEE_CENTS,
         addressLine: "12 MG Road, Bengaluru",
-        items: {
-          create: [{ name: "Margherita", priceCents: 900, quantity: 2 }],
-        },
+        items: { create: [{ name: "Margherita", priceCents: 900, quantity: 2 }] },
         payment: { create: { status: "PAID" } },
         events: { create: [{ from: null, to: "PLACED", byUserId: customer.id }] },
       },
     });
+  }
 
+  // Ensure a PAID, unclaimed READY order exists (feeds the Phase 3 driver pool).
+  const readyCount = await prisma.order.count({
+    where: { status: "READY", driverId: null },
+  });
+  if (readyCount === 0) {
     const readySubtotal = 1100;
-    const ready = await prisma.order.create({
+    await prisma.order.create({
       data: {
         customerId: customer.id,
         restaurantId: restaurant.id,
@@ -118,9 +122,7 @@ async function main() {
         totalCents: readySubtotal + DELIVERY_FEE_CENTS,
         addressLine: "8 Brigade Road, Bengaluru",
         driverId: null,
-        items: {
-          create: [{ name: "Pepperoni", priceCents: 1100, quantity: 1 }],
-        },
+        items: { create: [{ name: "Pepperoni", priceCents: 1100, quantity: 1 }] },
         payment: { create: { status: "PAID" } },
         events: {
           create: [
@@ -132,8 +134,6 @@ async function main() {
         },
       },
     });
-
-    console.log(`Seeded orders: PLACED ${placed.id}, READY ${ready.id}`);
   }
 
   console.log(
