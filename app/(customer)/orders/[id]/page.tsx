@@ -7,12 +7,22 @@ import { formatCents, orderRef, statusLabel } from "@/app/(customer)/_lib/format
 import { MarkPaidButton } from "./_components/mark-paid-button";
 import { OrderTracker } from "./_components/order-tracker";
 import { CancelOrderButton } from "./_components/cancel-order-button";
+import { ClearCartOnMount } from "./_components/clear-cart-on-mount";
 
 // Confirmation + live tracking ("/orders/[id]"). Owner-scoped (foreign/unknown
 // id -> 404). Shows a dev "mark paid" button while PENDING, a cancel button
 // while PLACED, the item summary, and a polling status timeline.
-export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
+// When reached right after checkout (?placed=1), renders <ClearCartOnMount> so
+// localStorage is cleared on the client.
+export default async function OrderPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ placed?: string }>;
+}) {
   const { id } = await params;
+  const { placed } = await searchParams;
   const customerId = await getCustomerId();
   if (!customerId) notFound();
 
@@ -37,6 +47,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
+      {placed === "1" ? <ClearCartOnMount /> : null}
       <Link href="/orders" className="text-sm text-muted-foreground underline">
         ← All orders
       </Link>

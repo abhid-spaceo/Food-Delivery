@@ -91,5 +91,5 @@ export async function placeOrder(
   });
 
   revalidatePath("/orders");
-  redirect(`/orders/${order.id}`);
+  redirect(`/orders/${order.id}?placed=1`);
 }
