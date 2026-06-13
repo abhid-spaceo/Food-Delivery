@@ -31,9 +31,13 @@ export const authConfig = {
       const role = auth?.user?.role;
       const { pathname } = request.nextUrl;
 
-      if (pathname.startsWith("/admin")) return role === "ADMIN";
-      if (pathname.startsWith("/restaurant")) return role === "RESTAURANT";
-      if (pathname.startsWith("/driver")) return role === "DRIVER";
+      // Match the role's dashboard exactly or its sub-paths — NOT a bare prefix,
+      // so the public customer route /restaurants/[id] does not collide with the
+      // RESTAURANT-role guard for /restaurant (/restaurants startsWith /restaurant).
+      if (pathname === "/admin" || pathname.startsWith("/admin/")) return role === "ADMIN";
+      if (pathname === "/restaurant" || pathname.startsWith("/restaurant/"))
+        return role === "RESTAURANT";
+      if (pathname === "/driver" || pathname.startsWith("/driver/")) return role === "DRIVER";
       if (CUSTOMER_PREFIXES.some((p) => pathname.startsWith(p))) return Boolean(auth);
       return true;
     },
