@@ -33,6 +33,7 @@ export const authConfig = {
 
       if (pathname.startsWith("/admin")) return role === "ADMIN";
       if (pathname.startsWith("/restaurant")) return role === "RESTAURANT";
+      if (pathname.startsWith("/driver")) return role === "DRIVER";
       if (CUSTOMER_PREFIXES.some((p) => pathname.startsWith(p))) return Boolean(auth);
       return true;
     },

@@ -49,7 +49,7 @@ const signUpSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["CUSTOMER", "RESTAURANT"]),
+  role: z.enum(["CUSTOMER", "RESTAURANT", "DRIVER"]),
 });
 
 export async function signUpAction(
@@ -71,7 +71,16 @@ export async function signUpAction(
   if (existing) return { error: "An account with this email already exists" };
 
   const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.user.create({ data: { name, email, passwordHash, role } });
+  const user = await prisma.user.create({
+    data: { name, email, passwordHash, role },
+  });
+
+  // A driver needs a Driver profile (starts PENDING; an admin approves it
+  // before the driver can claim orders). Restaurants build their profile on a
+  // dedicated onboarding screen, so only DRIVER gets an auto-created row here.
+  if (role === "DRIVER") {
+    await prisma.driver.create({ data: { userId: user.id, name } });
+  }
 
   try {
     await signIn("credentials", { email, password, redirect: false });

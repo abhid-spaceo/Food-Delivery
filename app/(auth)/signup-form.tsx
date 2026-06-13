@@ -42,6 +42,9 @@ export function SignUpForm() {
           <label className="flex items-center gap-2">
             <input type="radio" name="role" value="RESTAURANT" /> Restaurant
           </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="role" value="DRIVER" /> Driver
+          </label>
         </div>
       </fieldset>
       {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
