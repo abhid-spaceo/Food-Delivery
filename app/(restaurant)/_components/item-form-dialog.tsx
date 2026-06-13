@@ -17,6 +17,7 @@ type ItemValues = {
   priceCents: number;
   imageUrl: string;
   isAvailable: boolean;
+  isVeg: boolean;
 };
 
 export function ItemFormDialog({
@@ -77,6 +78,15 @@ export function ItemFormDialog({
               defaultChecked={item?.isAvailable ?? true}
             />
             Available
+          </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="isVeg"
+              defaultChecked={item?.isVeg ?? true}
+            />
+            Vegetarian
           </label>
 
           <div className="mt-2 flex justify-end gap-2">

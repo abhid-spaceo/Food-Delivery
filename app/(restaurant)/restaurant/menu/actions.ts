@@ -56,6 +56,7 @@ const itemSchema = z.object({
   priceCents: z.coerce.number().int("Price must be whole cents").min(0).max(1_000_000),
   imageUrl: z.union([z.url(), z.literal("")]).optional(),
   isAvailable: z.boolean(),
+  isVeg: z.boolean(),
 });
 
 /** Confirm a category belongs to the caller's restaurant before writing items. */
@@ -78,6 +79,7 @@ export async function createItem(formData: FormData) {
     priceCents: formData.get("priceCents"),
     imageUrl: formData.get("imageUrl") || undefined,
     isAvailable: formData.get("isAvailable") === "on",
+    isVeg: formData.get("isVeg") === "on",
   });
 
   await prisma.menuItem.create({
@@ -88,6 +90,7 @@ export async function createItem(formData: FormData) {
       priceCents: data.priceCents,
       imageUrl: data.imageUrl ? data.imageUrl : null,
       isAvailable: data.isAvailable,
+      isVeg: data.isVeg,
     },
   });
   revalidatePath("/restaurant/menu");
@@ -110,6 +113,7 @@ export async function updateItem(formData: FormData) {
     priceCents: formData.get("priceCents"),
     imageUrl: formData.get("imageUrl") || undefined,
     isAvailable: formData.get("isAvailable") === "on",
+    isVeg: formData.get("isVeg") === "on",
   });
 
   await prisma.menuItem.update({
@@ -120,6 +124,7 @@ export async function updateItem(formData: FormData) {
       priceCents: data.priceCents,
       imageUrl: data.imageUrl ? data.imageUrl : null,
       isAvailable: data.isAvailable,
+      isVeg: data.isVeg,
     },
   });
   revalidatePath("/restaurant/menu");

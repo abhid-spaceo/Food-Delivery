@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ImageFrame } from "@/components/ui/image-frame";
+import { VegIndicator } from "@/components/ui/veg-indicator";
 import { prisma } from "@/lib/db";
 import { getOwnedRestaurant } from "@/app/(restaurant)/_lib/restaurant";
 import { DashboardShell } from "@/app/(restaurant)/_components/dashboard-shell";
@@ -97,7 +98,8 @@ export default async function MenuPage() {
                         {/* Thumbnail + name + price */}
                         <div className="flex min-w-0 items-center gap-3">
                           <ImageFrame size="sm" />
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex items-center gap-2">
+                            <VegIndicator isVeg={item.isVeg} />
                             <span className="font-medium">{item.name}</span>
                             <span className="ml-2 text-sm text-muted-foreground">
                               {formatCents(item.priceCents)}
@@ -130,6 +132,7 @@ export default async function MenuPage() {
                               priceCents: item.priceCents,
                               imageUrl: item.imageUrl ?? "",
                               isAvailable: item.isAvailable,
+                              isVeg: item.isVeg,
                             }}
                             trigger={
                               <Button asChild size="sm" variant="ghost">

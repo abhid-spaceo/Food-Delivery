@@ -40,6 +40,7 @@ export default async function RestaurantDetailPage({
       name: true,
       cuisine: true,
       hours: true,
+      isAcceptingOrders: true,
       categories: {
         orderBy: { sortOrder: "asc" },
         select: {
@@ -48,7 +49,7 @@ export default async function RestaurantDetailPage({
           items: {
             where: { isAvailable: true },
             orderBy: { createdAt: "asc" },
-            select: { id: true, name: true, description: true, priceCents: true },
+            select: { id: true, name: true, description: true, priceCents: true, isVeg: true },
           },
         },
       },
@@ -82,7 +83,14 @@ export default async function RestaurantDetailPage({
         <div className="flex items-start gap-4">
           <ImageFrame emoji={bannerEmoji} size="md" className="shrink-0 -mt-10 ring-4 ring-background" />
           <div>
-            <h1 className="text-2xl font-semibold">{restaurant.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold">{restaurant.name}</h1>
+              {!restaurant.isAcceptingOrders && (
+                <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                  Closed
+                </span>
+              )}
+            </div>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {restaurant.cuisine}
               {restaurant.hours ? ` · ${restaurant.hours}` : ""}
@@ -103,8 +111,8 @@ export default async function RestaurantDetailPage({
                   {cat.items.map((it) => (
                     <div key={it.id} className="flex items-center justify-between gap-4 p-4 hover:bg-accent/40 transition-colors">
                       <div className="flex items-start gap-3 min-w-0">
-                        {/* VegIndicator — visual only, no E2E dependency on it */}
-                        <VegIndicator isVeg={true} className="mt-0.5 shrink-0" />
+                        {/* VegIndicator — driven by real DB field */}
+                        <VegIndicator isVeg={it.isVeg} className="mt-0.5 shrink-0" />
                         <div className="min-w-0">
                           <p className="font-medium truncate">{it.name}</p>
                           {it.description ? (
@@ -114,10 +122,14 @@ export default async function RestaurantDetailPage({
                         </div>
                       </div>
                       <div className="shrink-0">
-                        <AddToCartButton
-                          restaurant={ref}
-                          item={{ menuItemId: it.id, name: it.name, priceCents: it.priceCents }}
-                        />
+                        {restaurant.isAcceptingOrders ? (
+                          <AddToCartButton
+                            restaurant={ref}
+                            item={{ menuItemId: it.id, name: it.name, priceCents: it.priceCents }}
+                          />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Currently not accepting orders</span>
+                        )}
                       </div>
                     </div>
                   ))}
