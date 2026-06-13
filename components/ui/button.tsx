@@ -62,6 +62,18 @@ function Button({
       ? { background: "var(--gradient-brand)", ...style }
       : style;
 
+  // With asChild, Radix Slot requires EXACTLY ONE child — so we must pass
+  // `children` straight through (no spinner sibling, no `disabled` on the slotted
+  // element, which is often an <a>). The spinner/disabled only apply to a real
+  // <button>.
+  if (asChild) {
+    return (
+      <Comp className={cn(buttonVariants({ variant, size, className }))} style={gradientStyle} {...props}>
+        {children}
+      </Comp>
+    );
+  }
+
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}
