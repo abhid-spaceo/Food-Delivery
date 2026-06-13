@@ -23,6 +23,9 @@ async function signIn(page: import("@playwright/test").Page, email: string) {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("password123");
   await page.getByRole("button", { name: "Sign in" }).click();
+  // Wait for the post-login redirect so the session is established before any
+  // subsequent navigation to a guarded route (otherwise it races to /signin).
+  await page.waitForURL((url) => !url.pathname.includes("/signin"));
 }
 
 // Helper: open one READY order card from the pool and return its URL.
@@ -45,7 +48,9 @@ test("approved driver claims a READY order, delivers it, and earns the fee", asy
 
   // Lands on My deliveries; the order is now active (out for delivery).
   await expect(page).toHaveURL("/driver/deliveries");
-  await expect(page.getByText("OUT_FOR_DELIVERY")).toBeVisible();
+  // Force a fresh server render so we don't read a stale client-router cache.
+  await page.reload();
+  await expect(page.getByText("OUT_FOR_DELIVERY").first()).toBeVisible();
 
   // Open the active delivery and mark it delivered.
   await page.getByRole("link").filter({ hasText: /Mario|Brigade/ }).first().click();
@@ -109,5 +114,9 @@ test("admin approves a pending driver", async ({ page }) => {
   await page.goto("/admin/drivers?status=PENDING");
   const row = page.locator("tr", { hasText: email });
   await row.getByRole("button", { name: "Approve" }).click();
-  await expect(row.getByText("APPROVED")).toBeVisible();
+  // Once approved, the driver leaves the PENDING-filtered list...
+  await expect(page.locator("tr", { hasText: email })).toHaveCount(0);
+  // ...and now appears under the Approved filter.
+  await page.goto("/admin/drivers?status=APPROVED");
+  await expect(page.locator("tr", { hasText: email }).getByText("APPROVED")).toBeVisible();
 });
