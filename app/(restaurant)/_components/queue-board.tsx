@@ -91,6 +91,12 @@ export function QueueBoard({ initial }: { initial: QueueData }) {
         cta="Open"
         emptyText="No incoming orders. New paid orders appear here."
       />
+      <Column
+        title="Ready · awaiting driver"
+        orders={queue.ready}
+        cta="Open"
+        emptyText="Nothing ready for pickup."
+      />
       <Column title="In progress" orders={queue.inProgress} cta="Open" emptyText="Nothing in progress." />
       <Column title="Completed" orders={queue.completed} cta="View" emptyText="No completed orders yet." />
     </div>

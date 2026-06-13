@@ -15,11 +15,13 @@ export type QueueOrder = {
 
 export type QueueData = {
   new: QueueOrder[];
+  ready: QueueOrder[];
   inProgress: QueueOrder[];
   completed: QueueOrder[];
 };
 
 const NEW_STATES: OrderStatus[] = ["PLACED"];
+const READY_STATES: OrderStatus[] = ["READY"];
 const IN_PROGRESS_STATES: OrderStatus[] = ["ACCEPTED", "PREPARING", "OUT_FOR_DELIVERY"];
 const COMPLETED_STATES: OrderStatus[] = ["DELIVERED", "REJECTED", "CANCELLED"];
 
@@ -45,6 +47,7 @@ export async function getQueue(restaurantId: string): Promise<QueueData> {
 
   return {
     new: mapped.filter((o) => NEW_STATES.includes(o.status)),
+    ready: mapped.filter((o) => READY_STATES.includes(o.status)),
     inProgress: mapped.filter((o) => IN_PROGRESS_STATES.includes(o.status)),
     completed: mapped.filter((o) => COMPLETED_STATES.includes(o.status)),
   };
