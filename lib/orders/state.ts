@@ -12,10 +12,10 @@ export type Actor = "CUSTOMER" | "RESTAURANT" | "DRIVER" | "ADMIN";
 // forces this map to stay exhaustive if the schema's OrderStatus ever changes.
 const TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   PLACED: ["ACCEPTED", "REJECTED", "CANCELLED"],
-  ACCEPTED: ["PREPARING"],
-  PREPARING: ["READY"], // restaurant cooks, then marks ready for pickup
-  READY: ["OUT_FOR_DELIVERY"], // a driver claims it from the pool
-  OUT_FOR_DELIVERY: ["DELIVERED"], // the claiming driver delivers it
+  ACCEPTED: ["PREPARING", "CANCELLED"], // admin may force-cancel at any stage
+  PREPARING: ["READY", "CANCELLED"], // admin may force-cancel at any stage
+  READY: ["OUT_FOR_DELIVERY", "CANCELLED"], // admin may force-cancel at any stage
+  OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED"], // admin may force-cancel at any stage
   DELIVERED: [],
   REJECTED: [],
   CANCELLED: [],
@@ -23,15 +23,19 @@ const TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
 
 // Allowed actors per legal edge, keyed "FROM->TO". The restaurant drives the
 // kitchen legs through READY; the claiming driver owns the delivery legs; the
-// customer may only cancel before acceptance; ADMIN is allowed everywhere.
+// customer may only cancel before acceptance; ADMIN can force-cancel at any stage.
 const TRANSITION_ACTORS: Record<string, readonly Actor[]> = {
   "PLACED->ACCEPTED": ["RESTAURANT", "ADMIN"],
   "PLACED->REJECTED": ["RESTAURANT", "ADMIN"],
   "PLACED->CANCELLED": ["CUSTOMER", "ADMIN"],
   "ACCEPTED->PREPARING": ["RESTAURANT", "ADMIN"],
+  "ACCEPTED->CANCELLED": ["ADMIN"],
   "PREPARING->READY": ["RESTAURANT", "ADMIN"],
+  "PREPARING->CANCELLED": ["ADMIN"],
   "READY->OUT_FOR_DELIVERY": ["DRIVER", "ADMIN"],
+  "READY->CANCELLED": ["ADMIN"],
   "OUT_FOR_DELIVERY->DELIVERED": ["DRIVER", "ADMIN"],
+  "OUT_FOR_DELIVERY->CANCELLED": ["ADMIN"],
 };
 
 /** Statuses reachable from `from` in one legal step. */

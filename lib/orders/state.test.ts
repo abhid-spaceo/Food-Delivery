@@ -32,7 +32,8 @@ describe("order state machine", () => {
       ["PLACED", "PREPARING"],
       ["ACCEPTED", "DELIVERED"],
       ["ACCEPTED", "READY"],
-      ["ACCEPTED", "CANCELLED"],
+      // NOTE: ACCEPTED->CANCELLED is now graph-legal (admin-only); removed from
+      // this list. Actor restriction is tested in the actor-authorization block.
       ["PREPARING", "OUT_FOR_DELIVERY"],
       ["PREPARING", "ACCEPTED"],
       ["READY", "DELIVERED"],
@@ -66,11 +67,25 @@ describe("order state machine", () => {
         ["ACCEPTED", "CANCELLED", "REJECTED"].sort(),
       );
     });
-    it("PREPARING leads only to READY", () => {
-      expect(nextStatuses("PREPARING" as never)).toEqual(["READY"]);
+    it("ACCEPTED can go to PREPARING or CANCELLED (admin-cancel edge)", () => {
+      expect([...nextStatuses("ACCEPTED" as never)].sort()).toEqual(
+        ["CANCELLED", "PREPARING"].sort(),
+      );
     });
-    it("READY leads only to OUT_FOR_DELIVERY", () => {
-      expect(nextStatuses("READY" as never)).toEqual(["OUT_FOR_DELIVERY"]);
+    it("PREPARING leads to READY or CANCELLED (admin-cancel edge)", () => {
+      expect([...nextStatuses("PREPARING" as never)].sort()).toEqual(
+        ["CANCELLED", "READY"].sort(),
+      );
+    });
+    it("READY leads to OUT_FOR_DELIVERY or CANCELLED (admin-cancel edge)", () => {
+      expect([...nextStatuses("READY" as never)].sort()).toEqual(
+        ["CANCELLED", "OUT_FOR_DELIVERY"].sort(),
+      );
+    });
+    it("OUT_FOR_DELIVERY leads to DELIVERED or CANCELLED (admin-cancel edge)", () => {
+      expect([...nextStatuses("OUT_FOR_DELIVERY" as never)].sort()).toEqual(
+        ["CANCELLED", "DELIVERED"].sort(),
+      );
     });
     it("returns empty for a terminal state", () => {
       expect(nextStatuses("DELIVERED" as never)).toHaveLength(0);
@@ -132,15 +147,73 @@ describe("order state machine", () => {
         assertTransition("PLACED" as never, "ACCEPTED" as never, "CUSTOMER"),
       ).toThrow(UnauthorizedActorError);
     });
-    it("admin is allowed on every legal edge", () => {
+    it("customer CANNOT cancel after PLACED (actor-restricted edges)", () => {
+      expect(() =>
+        assertTransition("ACCEPTED" as never, "CANCELLED" as never, "CUSTOMER"),
+      ).toThrow(UnauthorizedActorError);
+      expect(() =>
+        assertTransition("PREPARING" as never, "CANCELLED" as never, "CUSTOMER"),
+      ).toThrow(UnauthorizedActorError);
+      expect(() =>
+        assertTransition("READY" as never, "CANCELLED" as never, "CUSTOMER"),
+      ).toThrow(UnauthorizedActorError);
+      expect(() =>
+        assertTransition("OUT_FOR_DELIVERY" as never, "CANCELLED" as never, "CUSTOMER"),
+      ).toThrow(UnauthorizedActorError);
+    });
+    it("restaurant CANNOT force-cancel (actor-restricted edges)", () => {
+      expect(() =>
+        assertTransition("ACCEPTED" as never, "CANCELLED" as never, "RESTAURANT"),
+      ).toThrow(UnauthorizedActorError);
+      expect(() =>
+        assertTransition("PREPARING" as never, "CANCELLED" as never, "RESTAURANT"),
+      ).toThrow(UnauthorizedActorError);
+      expect(() =>
+        assertTransition("READY" as never, "CANCELLED" as never, "RESTAURANT"),
+      ).toThrow(UnauthorizedActorError);
+    });
+    it("driver CANNOT force-cancel (actor-restricted edges)", () => {
+      expect(() =>
+        assertTransition("READY" as never, "CANCELLED" as never, "DRIVER"),
+      ).toThrow(UnauthorizedActorError);
+      expect(() =>
+        assertTransition("OUT_FOR_DELIVERY" as never, "CANCELLED" as never, "DRIVER"),
+      ).toThrow(UnauthorizedActorError);
+    });
+    it("admin CAN force-cancel from any non-terminal status", () => {
+      const nonTerminal = [
+        "PLACED",
+        "ACCEPTED",
+        "PREPARING",
+        "READY",
+        "OUT_FOR_DELIVERY",
+      ] as const;
+      for (const from of nonTerminal) {
+        expect(() =>
+          assertTransition(from as never, "CANCELLED" as never, "ADMIN"),
+        ).not.toThrow();
+      }
+    });
+    it("admin CANNOT cancel an already-terminal order (graph illegal)", () => {
+      for (const terminal of ["DELIVERED", "REJECTED", "CANCELLED"] as const) {
+        expect(() =>
+          assertTransition(terminal as never, "CANCELLED" as never, "ADMIN"),
+        ).toThrow(IllegalTransitionError);
+      }
+    });
+    it("admin is allowed on every legal edge (kitchen + delivery legs)", () => {
       const edges: ReadonlyArray<[string, string]> = [
         ["PLACED", "ACCEPTED"],
         ["PLACED", "REJECTED"],
         ["PLACED", "CANCELLED"],
         ["ACCEPTED", "PREPARING"],
+        ["ACCEPTED", "CANCELLED"],
         ["PREPARING", "READY"],
+        ["PREPARING", "CANCELLED"],
         ["READY", "OUT_FOR_DELIVERY"],
+        ["READY", "CANCELLED"],
         ["OUT_FOR_DELIVERY", "DELIVERED"],
+        ["OUT_FOR_DELIVERY", "CANCELLED"],
       ];
       for (const [from, to] of edges) {
         expect(() =>
