@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Store, Users, ReceiptText } from "lucide-react";
+import { LayoutDashboard, Store, Car, Users, ReceiptText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Admin sidebar (S14-S17 wireframes). Highlights the active section based on the
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/restaurants", label: "Restaurants", icon: Store, exact: false },
+  { href: "/admin/drivers", label: "Drivers", icon: Car, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
   { href: "/admin/orders", label: "Orders", icon: ReceiptText, exact: false },
 ];
