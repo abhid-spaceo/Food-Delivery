@@ -51,8 +51,8 @@ async function main() {
         sortOrder: 0,
         items: {
           create: [
-            { name: "Margherita", description: "Classic tomato & mozzarella", priceCents: 900 },
-            { name: "Pepperoni", description: "Pepperoni & cheese", priceCents: 1100 },
+            { name: "Margherita", description: "Classic tomato & mozzarella", priceCents: 900, isVeg: true },
+            { name: "Pepperoni", description: "Pepperoni & cheese", priceCents: 1100, isVeg: false },
           ],
         },
       },
@@ -111,7 +111,7 @@ async function main() {
   if (cat2 === 0) {
     await prisma.menuCategory.create({
       data: { restaurantId: restaurant2.id, name: "Curries", sortOrder: 0,
-        items: { create: [{ name: "Paneer Butter Masala", description: "Creamy tomato", priceCents: 1200 }] } },
+        items: { create: [{ name: "Paneer Butter Masala", description: "Creamy tomato", priceCents: 1200, isVeg: true }] } },
     });
   }
 

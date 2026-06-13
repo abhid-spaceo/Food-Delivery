@@ -98,6 +98,7 @@ export const RestaurantScalarFieldEnum = {
   name: 'name',
   cuisine: 'cuisine',
   status: 'status',
+  isAcceptingOrders: 'isAcceptingOrders',
   hours: 'hours',
   deliveryArea: 'deliveryArea',
   createdAt: 'createdAt',
@@ -113,6 +114,7 @@ export const DriverScalarFieldEnum = {
   name: 'name',
   phone: 'phone',
   status: 'status',
+  isOnline: 'isOnline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -138,6 +140,7 @@ export const MenuItemScalarFieldEnum = {
   priceCents: 'priceCents',
   imageUrl: 'imageUrl',
   isAvailable: 'isAvailable',
+  isVeg: 'isVeg',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -162,6 +165,7 @@ export const OrderScalarFieldEnum = {
   restaurantId: 'restaurantId',
   driverId: 'driverId',
   status: 'status',
+  prepMinutes: 'prepMinutes',
   subtotalCents: 'subtotalCents',
   deliveryFeeCents: 'deliveryFeeCents',
   totalCents: 'totalCents',

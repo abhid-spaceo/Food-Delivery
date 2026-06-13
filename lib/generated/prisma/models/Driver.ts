@@ -30,6 +30,7 @@ export type DriverMinAggregateOutputType = {
   name: string | null
   phone: string | null
   status: $Enums.DriverStatus | null
+  isOnline: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -40,6 +41,7 @@ export type DriverMaxAggregateOutputType = {
   name: string | null
   phone: string | null
   status: $Enums.DriverStatus | null
+  isOnline: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +52,7 @@ export type DriverCountAggregateOutputType = {
   name: number
   phone: number
   status: number
+  isOnline: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -62,6 +65,7 @@ export type DriverMinAggregateInputType = {
   name?: true
   phone?: true
   status?: true
+  isOnline?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -72,6 +76,7 @@ export type DriverMaxAggregateInputType = {
   name?: true
   phone?: true
   status?: true
+  isOnline?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +87,7 @@ export type DriverCountAggregateInputType = {
   name?: true
   phone?: true
   status?: true
+  isOnline?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -165,6 +171,7 @@ export type DriverGroupByOutputType = {
   name: string
   phone: string | null
   status: $Enums.DriverStatus
+  isOnline: boolean
   createdAt: Date
   updatedAt: Date
   _count: DriverCountAggregateOutputType | null
@@ -196,6 +203,7 @@ export type DriverWhereInput = {
   name?: Prisma.StringFilter<"Driver"> | string
   phone?: Prisma.StringNullableFilter<"Driver"> | string | null
   status?: Prisma.EnumDriverStatusFilter<"Driver"> | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFilter<"Driver"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -208,6 +216,7 @@ export type DriverOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  isOnline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -223,6 +232,7 @@ export type DriverWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Driver"> | string
   phone?: Prisma.StringNullableFilter<"Driver"> | string | null
   status?: Prisma.EnumDriverStatusFilter<"Driver"> | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFilter<"Driver"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -235,6 +245,7 @@ export type DriverOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  isOnline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DriverCountOrderByAggregateInput
@@ -251,6 +262,7 @@ export type DriverScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Driver"> | string
   phone?: Prisma.StringNullableWithAggregatesFilter<"Driver"> | string | null
   status?: Prisma.EnumDriverStatusWithAggregatesFilter<"Driver"> | $Enums.DriverStatus
+  isOnline?: Prisma.BoolWithAggregatesFilter<"Driver"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Driver"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Driver"> | Date | string
 }
@@ -260,6 +272,7 @@ export type DriverCreateInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutDriverInput
@@ -272,6 +285,7 @@ export type DriverUncheckedCreateInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDriverInput
@@ -282,6 +296,7 @@ export type DriverUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutDriverNestedInput
@@ -294,6 +309,7 @@ export type DriverUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDriverNestedInput
@@ -305,6 +321,7 @@ export type DriverCreateManyInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -314,6 +331,7 @@ export type DriverUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -324,6 +342,7 @@ export type DriverUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -339,6 +358,7 @@ export type DriverCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isOnline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -349,6 +369,7 @@ export type DriverMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isOnline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -359,6 +380,7 @@ export type DriverMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isOnline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -420,6 +442,7 @@ export type DriverCreateWithoutUserInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderCreateNestedManyWithoutDriverInput
@@ -430,6 +453,7 @@ export type DriverUncheckedCreateWithoutUserInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDriverInput
@@ -456,6 +480,7 @@ export type DriverUpdateWithoutUserInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUpdateManyWithoutDriverNestedInput
@@ -466,6 +491,7 @@ export type DriverUncheckedUpdateWithoutUserInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDriverNestedInput
@@ -476,6 +502,7 @@ export type DriverCreateWithoutOrdersInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutDriverInput
@@ -487,6 +514,7 @@ export type DriverUncheckedCreateWithoutOrdersInput = {
   name: string
   phone?: string | null
   status?: $Enums.DriverStatus
+  isOnline?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -512,6 +540,7 @@ export type DriverUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutDriverNestedInput
@@ -523,6 +552,7 @@ export type DriverUncheckedUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -564,6 +594,7 @@ export type DriverSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name?: boolean
   phone?: boolean
   status?: boolean
+  isOnline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -577,6 +608,7 @@ export type DriverSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   name?: boolean
   phone?: boolean
   status?: boolean
+  isOnline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -588,6 +620,7 @@ export type DriverSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   name?: boolean
   phone?: boolean
   status?: boolean
+  isOnline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -599,11 +632,12 @@ export type DriverSelectScalar = {
   name?: boolean
   phone?: boolean
   status?: boolean
+  isOnline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DriverOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "phone" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["driver"]>
+export type DriverOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "phone" | "status" | "isOnline" | "createdAt" | "updatedAt", ExtArgs["result"]["driver"]>
 export type DriverInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   orders?: boolean | Prisma.Driver$ordersArgs<ExtArgs>
@@ -628,6 +662,7 @@ export type $DriverPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     name: string
     phone: string | null
     status: $Enums.DriverStatus
+    isOnline: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["driver"]>
@@ -1060,6 +1095,7 @@ export interface DriverFieldRefs {
   readonly name: Prisma.FieldRef<"Driver", 'String'>
   readonly phone: Prisma.FieldRef<"Driver", 'String'>
   readonly status: Prisma.FieldRef<"Driver", 'DriverStatus'>
+  readonly isOnline: Prisma.FieldRef<"Driver", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Driver", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Driver", 'DateTime'>
 }

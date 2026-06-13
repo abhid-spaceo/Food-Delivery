@@ -27,12 +27,14 @@ export type AggregateOrder = {
 }
 
 export type OrderAvgAggregateOutputType = {
+  prepMinutes: number | null
   subtotalCents: number | null
   deliveryFeeCents: number | null
   totalCents: number | null
 }
 
 export type OrderSumAggregateOutputType = {
+  prepMinutes: number | null
   subtotalCents: number | null
   deliveryFeeCents: number | null
   totalCents: number | null
@@ -44,6 +46,7 @@ export type OrderMinAggregateOutputType = {
   restaurantId: string | null
   driverId: string | null
   status: $Enums.OrderStatus | null
+  prepMinutes: number | null
   subtotalCents: number | null
   deliveryFeeCents: number | null
   totalCents: number | null
@@ -58,6 +61,7 @@ export type OrderMaxAggregateOutputType = {
   restaurantId: string | null
   driverId: string | null
   status: $Enums.OrderStatus | null
+  prepMinutes: number | null
   subtotalCents: number | null
   deliveryFeeCents: number | null
   totalCents: number | null
@@ -72,6 +76,7 @@ export type OrderCountAggregateOutputType = {
   restaurantId: number
   driverId: number
   status: number
+  prepMinutes: number
   subtotalCents: number
   deliveryFeeCents: number
   totalCents: number
@@ -83,12 +88,14 @@ export type OrderCountAggregateOutputType = {
 
 
 export type OrderAvgAggregateInputType = {
+  prepMinutes?: true
   subtotalCents?: true
   deliveryFeeCents?: true
   totalCents?: true
 }
 
 export type OrderSumAggregateInputType = {
+  prepMinutes?: true
   subtotalCents?: true
   deliveryFeeCents?: true
   totalCents?: true
@@ -100,6 +107,7 @@ export type OrderMinAggregateInputType = {
   restaurantId?: true
   driverId?: true
   status?: true
+  prepMinutes?: true
   subtotalCents?: true
   deliveryFeeCents?: true
   totalCents?: true
@@ -114,6 +122,7 @@ export type OrderMaxAggregateInputType = {
   restaurantId?: true
   driverId?: true
   status?: true
+  prepMinutes?: true
   subtotalCents?: true
   deliveryFeeCents?: true
   totalCents?: true
@@ -128,6 +137,7 @@ export type OrderCountAggregateInputType = {
   restaurantId?: true
   driverId?: true
   status?: true
+  prepMinutes?: true
   subtotalCents?: true
   deliveryFeeCents?: true
   totalCents?: true
@@ -229,6 +239,7 @@ export type OrderGroupByOutputType = {
   restaurantId: string
   driverId: string | null
   status: $Enums.OrderStatus
+  prepMinutes: number | null
   subtotalCents: number
   deliveryFeeCents: number
   totalCents: number
@@ -266,6 +277,7 @@ export type OrderWhereInput = {
   restaurantId?: Prisma.StringFilter<"Order"> | string
   driverId?: Prisma.StringNullableFilter<"Order"> | string | null
   status?: Prisma.EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+  prepMinutes?: Prisma.IntNullableFilter<"Order"> | number | null
   subtotalCents?: Prisma.IntFilter<"Order"> | number
   deliveryFeeCents?: Prisma.IntFilter<"Order"> | number
   totalCents?: Prisma.IntFilter<"Order"> | number
@@ -286,6 +298,7 @@ export type OrderOrderByWithRelationInput = {
   restaurantId?: Prisma.SortOrder
   driverId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  prepMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -309,6 +322,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   restaurantId?: Prisma.StringFilter<"Order"> | string
   driverId?: Prisma.StringNullableFilter<"Order"> | string | null
   status?: Prisma.EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+  prepMinutes?: Prisma.IntNullableFilter<"Order"> | number | null
   subtotalCents?: Prisma.IntFilter<"Order"> | number
   deliveryFeeCents?: Prisma.IntFilter<"Order"> | number
   totalCents?: Prisma.IntFilter<"Order"> | number
@@ -329,6 +343,7 @@ export type OrderOrderByWithAggregationInput = {
   restaurantId?: Prisma.SortOrder
   driverId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  prepMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -351,6 +366,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   restaurantId?: Prisma.StringWithAggregatesFilter<"Order"> | string
   driverId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   status?: Prisma.EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
+  prepMinutes?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   subtotalCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   deliveryFeeCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   totalCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
@@ -362,6 +378,7 @@ export type OrderScalarWhereWithAggregatesInput = {
 export type OrderCreateInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -382,6 +399,7 @@ export type OrderUncheckedCreateInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -396,6 +414,7 @@ export type OrderUncheckedCreateInput = {
 export type OrderUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -416,6 +435,7 @@ export type OrderUncheckedUpdateInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -433,6 +453,7 @@ export type OrderCreateManyInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -444,6 +465,7 @@ export type OrderCreateManyInput = {
 export type OrderUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -458,6 +480,7 @@ export type OrderUncheckedUpdateManyInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -482,6 +505,7 @@ export type OrderCountOrderByAggregateInput = {
   restaurantId?: Prisma.SortOrder
   driverId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  prepMinutes?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -491,6 +515,7 @@ export type OrderCountOrderByAggregateInput = {
 }
 
 export type OrderAvgOrderByAggregateInput = {
+  prepMinutes?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -502,6 +527,7 @@ export type OrderMaxOrderByAggregateInput = {
   restaurantId?: Prisma.SortOrder
   driverId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  prepMinutes?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -516,6 +542,7 @@ export type OrderMinOrderByAggregateInput = {
   restaurantId?: Prisma.SortOrder
   driverId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  prepMinutes?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -525,6 +552,7 @@ export type OrderMinOrderByAggregateInput = {
 }
 
 export type OrderSumOrderByAggregateInput = {
+  prepMinutes?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   deliveryFeeCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
@@ -665,6 +693,14 @@ export type EnumOrderStatusFieldUpdateOperationsInput = {
   set?: $Enums.OrderStatus
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type OrderCreateNestedOneWithoutItemsInput = {
   create?: Prisma.XOR<Prisma.OrderCreateWithoutItemsInput, Prisma.OrderUncheckedCreateWithoutItemsInput>
   connectOrCreate?: Prisma.OrderCreateOrConnectWithoutItemsInput
@@ -710,6 +746,7 @@ export type OrderUpdateOneRequiredWithoutEventsNestedInput = {
 export type OrderCreateWithoutCustomerInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -728,6 +765,7 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -774,6 +812,7 @@ export type OrderScalarWhereInput = {
   restaurantId?: Prisma.StringFilter<"Order"> | string
   driverId?: Prisma.StringNullableFilter<"Order"> | string | null
   status?: Prisma.EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+  prepMinutes?: Prisma.IntNullableFilter<"Order"> | number | null
   subtotalCents?: Prisma.IntFilter<"Order"> | number
   deliveryFeeCents?: Prisma.IntFilter<"Order"> | number
   totalCents?: Prisma.IntFilter<"Order"> | number
@@ -785,6 +824,7 @@ export type OrderScalarWhereInput = {
 export type OrderCreateWithoutRestaurantInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -803,6 +843,7 @@ export type OrderUncheckedCreateWithoutRestaurantInput = {
   customerId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -843,6 +884,7 @@ export type OrderUpdateManyWithWhereWithoutRestaurantInput = {
 export type OrderCreateWithoutDriverInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -861,6 +903,7 @@ export type OrderUncheckedCreateWithoutDriverInput = {
   customerId: string
   restaurantId: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -901,6 +944,7 @@ export type OrderUpdateManyWithWhereWithoutDriverInput = {
 export type OrderCreateWithoutItemsInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -920,6 +964,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -949,6 +994,7 @@ export type OrderUpdateToOneWithWhereWithoutItemsInput = {
 export type OrderUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -968,6 +1014,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -981,6 +1028,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
 export type OrderCreateWithoutPaymentInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1000,6 +1048,7 @@ export type OrderUncheckedCreateWithoutPaymentInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1029,6 +1078,7 @@ export type OrderUpdateToOneWithWhereWithoutPaymentInput = {
 export type OrderUpdateWithoutPaymentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1048,6 +1098,7 @@ export type OrderUncheckedUpdateWithoutPaymentInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1061,6 +1112,7 @@ export type OrderUncheckedUpdateWithoutPaymentInput = {
 export type OrderCreateWithoutEventsInput = {
   id?: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1080,6 +1132,7 @@ export type OrderUncheckedCreateWithoutEventsInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1109,6 +1162,7 @@ export type OrderUpdateToOneWithWhereWithoutEventsInput = {
 export type OrderUpdateWithoutEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1128,6 +1182,7 @@ export type OrderUncheckedUpdateWithoutEventsInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1143,6 +1198,7 @@ export type OrderCreateManyCustomerInput = {
   restaurantId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1154,6 +1210,7 @@ export type OrderCreateManyCustomerInput = {
 export type OrderUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1172,6 +1229,7 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1188,6 +1246,7 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1201,6 +1260,7 @@ export type OrderCreateManyRestaurantInput = {
   customerId: string
   driverId?: string | null
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1212,6 +1272,7 @@ export type OrderCreateManyRestaurantInput = {
 export type OrderUpdateWithoutRestaurantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1230,6 +1291,7 @@ export type OrderUncheckedUpdateWithoutRestaurantInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1246,6 +1308,7 @@ export type OrderUncheckedUpdateManyWithoutRestaurantInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1259,6 +1322,7 @@ export type OrderCreateManyDriverInput = {
   customerId: string
   restaurantId: string
   status?: $Enums.OrderStatus
+  prepMinutes?: number | null
   subtotalCents: number
   deliveryFeeCents?: number
   totalCents: number
@@ -1270,6 +1334,7 @@ export type OrderCreateManyDriverInput = {
 export type OrderUpdateWithoutDriverInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1288,6 +1353,7 @@ export type OrderUncheckedUpdateWithoutDriverInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1304,6 +1370,7 @@ export type OrderUncheckedUpdateManyWithoutDriverInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   restaurantId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  prepMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   deliveryFeeCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1358,6 +1425,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   restaurantId?: boolean
   driverId?: boolean
   status?: boolean
+  prepMinutes?: boolean
   subtotalCents?: boolean
   deliveryFeeCents?: boolean
   totalCents?: boolean
@@ -1379,6 +1447,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   restaurantId?: boolean
   driverId?: boolean
   status?: boolean
+  prepMinutes?: boolean
   subtotalCents?: boolean
   deliveryFeeCents?: boolean
   totalCents?: boolean
@@ -1396,6 +1465,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   restaurantId?: boolean
   driverId?: boolean
   status?: boolean
+  prepMinutes?: boolean
   subtotalCents?: boolean
   deliveryFeeCents?: boolean
   totalCents?: boolean
@@ -1413,6 +1483,7 @@ export type OrderSelectScalar = {
   restaurantId?: boolean
   driverId?: boolean
   status?: boolean
+  prepMinutes?: boolean
   subtotalCents?: boolean
   deliveryFeeCents?: boolean
   totalCents?: boolean
@@ -1421,7 +1492,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "restaurantId" | "driverId" | "status" | "subtotalCents" | "deliveryFeeCents" | "totalCents" | "addressLine" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "restaurantId" | "driverId" | "status" | "prepMinutes" | "subtotalCents" | "deliveryFeeCents" | "totalCents" | "addressLine" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   restaurant?: boolean | Prisma.RestaurantDefaultArgs<ExtArgs>
@@ -1458,6 +1529,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     restaurantId: string
     driverId: string | null
     status: $Enums.OrderStatus
+    prepMinutes: number | null
     subtotalCents: number
     deliveryFeeCents: number
     totalCents: number
@@ -1898,6 +1970,7 @@ export interface OrderFieldRefs {
   readonly restaurantId: Prisma.FieldRef<"Order", 'String'>
   readonly driverId: Prisma.FieldRef<"Order", 'String'>
   readonly status: Prisma.FieldRef<"Order", 'OrderStatus'>
+  readonly prepMinutes: Prisma.FieldRef<"Order", 'Int'>
   readonly subtotalCents: Prisma.FieldRef<"Order", 'Int'>
   readonly deliveryFeeCents: Prisma.FieldRef<"Order", 'Int'>
   readonly totalCents: Prisma.FieldRef<"Order", 'Int'>

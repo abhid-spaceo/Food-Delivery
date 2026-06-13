@@ -1211,6 +1211,7 @@ export const RestaurantScalarFieldEnum = {
   name: 'name',
   cuisine: 'cuisine',
   status: 'status',
+  isAcceptingOrders: 'isAcceptingOrders',
   hours: 'hours',
   deliveryArea: 'deliveryArea',
   createdAt: 'createdAt',
@@ -1226,6 +1227,7 @@ export const DriverScalarFieldEnum = {
   name: 'name',
   phone: 'phone',
   status: 'status',
+  isOnline: 'isOnline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1251,6 +1253,7 @@ export const MenuItemScalarFieldEnum = {
   priceCents: 'priceCents',
   imageUrl: 'imageUrl',
   isAvailable: 'isAvailable',
+  isVeg: 'isVeg',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1275,6 +1278,7 @@ export const OrderScalarFieldEnum = {
   restaurantId: 'restaurantId',
   driverId: 'driverId',
   status: 'status',
+  prepMinutes: 'prepMinutes',
   subtotalCents: 'subtotalCents',
   deliveryFeeCents: 'deliveryFeeCents',
   totalCents: 'totalCents',
@@ -1408,6 +1412,13 @@ export type ListEnumRestaurantStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'DriverStatus'
  */
 export type EnumDriverStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DriverStatus'>
@@ -1432,13 +1443,6 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

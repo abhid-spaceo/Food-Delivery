@@ -30,6 +30,7 @@ export type RestaurantMinAggregateOutputType = {
   name: string | null
   cuisine: string | null
   status: $Enums.RestaurantStatus | null
+  isAcceptingOrders: boolean | null
   hours: string | null
   deliveryArea: string | null
   createdAt: Date | null
@@ -42,6 +43,7 @@ export type RestaurantMaxAggregateOutputType = {
   name: string | null
   cuisine: string | null
   status: $Enums.RestaurantStatus | null
+  isAcceptingOrders: boolean | null
   hours: string | null
   deliveryArea: string | null
   createdAt: Date | null
@@ -54,6 +56,7 @@ export type RestaurantCountAggregateOutputType = {
   name: number
   cuisine: number
   status: number
+  isAcceptingOrders: number
   hours: number
   deliveryArea: number
   createdAt: number
@@ -68,6 +71,7 @@ export type RestaurantMinAggregateInputType = {
   name?: true
   cuisine?: true
   status?: true
+  isAcceptingOrders?: true
   hours?: true
   deliveryArea?: true
   createdAt?: true
@@ -80,6 +84,7 @@ export type RestaurantMaxAggregateInputType = {
   name?: true
   cuisine?: true
   status?: true
+  isAcceptingOrders?: true
   hours?: true
   deliveryArea?: true
   createdAt?: true
@@ -92,6 +97,7 @@ export type RestaurantCountAggregateInputType = {
   name?: true
   cuisine?: true
   status?: true
+  isAcceptingOrders?: true
   hours?: true
   deliveryArea?: true
   createdAt?: true
@@ -177,6 +183,7 @@ export type RestaurantGroupByOutputType = {
   name: string
   cuisine: string
   status: $Enums.RestaurantStatus
+  isAcceptingOrders: boolean
   hours: string | null
   deliveryArea: string | null
   createdAt: Date
@@ -210,6 +217,7 @@ export type RestaurantWhereInput = {
   name?: Prisma.StringFilter<"Restaurant"> | string
   cuisine?: Prisma.StringFilter<"Restaurant"> | string
   status?: Prisma.EnumRestaurantStatusFilter<"Restaurant"> | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFilter<"Restaurant"> | boolean
   hours?: Prisma.StringNullableFilter<"Restaurant"> | string | null
   deliveryArea?: Prisma.StringNullableFilter<"Restaurant"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restaurant"> | Date | string
@@ -225,6 +233,7 @@ export type RestaurantOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   cuisine?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isAcceptingOrders?: Prisma.SortOrder
   hours?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveryArea?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -243,6 +252,7 @@ export type RestaurantWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Restaurant"> | string
   cuisine?: Prisma.StringFilter<"Restaurant"> | string
   status?: Prisma.EnumRestaurantStatusFilter<"Restaurant"> | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFilter<"Restaurant"> | boolean
   hours?: Prisma.StringNullableFilter<"Restaurant"> | string | null
   deliveryArea?: Prisma.StringNullableFilter<"Restaurant"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restaurant"> | Date | string
@@ -258,6 +268,7 @@ export type RestaurantOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   cuisine?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isAcceptingOrders?: Prisma.SortOrder
   hours?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveryArea?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -276,6 +287,7 @@ export type RestaurantScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Restaurant"> | string
   cuisine?: Prisma.StringWithAggregatesFilter<"Restaurant"> | string
   status?: Prisma.EnumRestaurantStatusWithAggregatesFilter<"Restaurant"> | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolWithAggregatesFilter<"Restaurant"> | boolean
   hours?: Prisma.StringNullableWithAggregatesFilter<"Restaurant"> | string | null
   deliveryArea?: Prisma.StringNullableWithAggregatesFilter<"Restaurant"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Restaurant"> | Date | string
@@ -287,6 +299,7 @@ export type RestaurantCreateInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -302,6 +315,7 @@ export type RestaurantUncheckedCreateInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -315,6 +329,7 @@ export type RestaurantUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -330,6 +345,7 @@ export type RestaurantUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -344,6 +360,7 @@ export type RestaurantCreateManyInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -355,6 +372,7 @@ export type RestaurantUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -367,6 +385,7 @@ export type RestaurantUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -384,6 +403,7 @@ export type RestaurantCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   cuisine?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isAcceptingOrders?: Prisma.SortOrder
   hours?: Prisma.SortOrder
   deliveryArea?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -396,6 +416,7 @@ export type RestaurantMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   cuisine?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isAcceptingOrders?: Prisma.SortOrder
   hours?: Prisma.SortOrder
   deliveryArea?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -408,6 +429,7 @@ export type RestaurantMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   cuisine?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isAcceptingOrders?: Prisma.SortOrder
   hours?: Prisma.SortOrder
   deliveryArea?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -455,6 +477,10 @@ export type EnumRestaurantStatusFieldUpdateOperationsInput = {
   set?: $Enums.RestaurantStatus
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type RestaurantCreateNestedOneWithoutCategoriesInput = {
   create?: Prisma.XOR<Prisma.RestaurantCreateWithoutCategoriesInput, Prisma.RestaurantUncheckedCreateWithoutCategoriesInput>
   connectOrCreate?: Prisma.RestaurantCreateOrConnectWithoutCategoriesInput
@@ -488,6 +514,7 @@ export type RestaurantCreateWithoutOwnerInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -501,6 +528,7 @@ export type RestaurantUncheckedCreateWithoutOwnerInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -530,6 +558,7 @@ export type RestaurantUpdateWithoutOwnerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -543,6 +572,7 @@ export type RestaurantUncheckedUpdateWithoutOwnerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -556,6 +586,7 @@ export type RestaurantCreateWithoutCategoriesInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -570,6 +601,7 @@ export type RestaurantUncheckedCreateWithoutCategoriesInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -598,6 +630,7 @@ export type RestaurantUpdateWithoutCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -612,6 +645,7 @@ export type RestaurantUncheckedUpdateWithoutCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -624,6 +658,7 @@ export type RestaurantCreateWithoutOrdersInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -638,6 +673,7 @@ export type RestaurantUncheckedCreateWithoutOrdersInput = {
   name: string
   cuisine: string
   status?: $Enums.RestaurantStatus
+  isAcceptingOrders?: boolean
   hours?: string | null
   deliveryArea?: string | null
   createdAt?: Date | string
@@ -666,6 +702,7 @@ export type RestaurantUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -680,6 +717,7 @@ export type RestaurantUncheckedUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   cuisine?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRestaurantStatusFieldUpdateOperationsInput | $Enums.RestaurantStatus
+  isAcceptingOrders?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -733,6 +771,7 @@ export type RestaurantSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   name?: boolean
   cuisine?: boolean
   status?: boolean
+  isAcceptingOrders?: boolean
   hours?: boolean
   deliveryArea?: boolean
   createdAt?: boolean
@@ -749,6 +788,7 @@ export type RestaurantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   name?: boolean
   cuisine?: boolean
   status?: boolean
+  isAcceptingOrders?: boolean
   hours?: boolean
   deliveryArea?: boolean
   createdAt?: boolean
@@ -762,6 +802,7 @@ export type RestaurantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   name?: boolean
   cuisine?: boolean
   status?: boolean
+  isAcceptingOrders?: boolean
   hours?: boolean
   deliveryArea?: boolean
   createdAt?: boolean
@@ -775,13 +816,14 @@ export type RestaurantSelectScalar = {
   name?: boolean
   cuisine?: boolean
   status?: boolean
+  isAcceptingOrders?: boolean
   hours?: boolean
   deliveryArea?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RestaurantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "name" | "cuisine" | "status" | "hours" | "deliveryArea" | "createdAt" | "updatedAt", ExtArgs["result"]["restaurant"]>
+export type RestaurantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "name" | "cuisine" | "status" | "isAcceptingOrders" | "hours" | "deliveryArea" | "createdAt" | "updatedAt", ExtArgs["result"]["restaurant"]>
 export type RestaurantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   categories?: boolean | Prisma.Restaurant$categoriesArgs<ExtArgs>
@@ -808,6 +850,7 @@ export type $RestaurantPayload<ExtArgs extends runtime.Types.Extensions.Internal
     name: string
     cuisine: string
     status: $Enums.RestaurantStatus
+    isAcceptingOrders: boolean
     hours: string | null
     deliveryArea: string | null
     createdAt: Date
@@ -1243,6 +1286,7 @@ export interface RestaurantFieldRefs {
   readonly name: Prisma.FieldRef<"Restaurant", 'String'>
   readonly cuisine: Prisma.FieldRef<"Restaurant", 'String'>
   readonly status: Prisma.FieldRef<"Restaurant", 'RestaurantStatus'>
+  readonly isAcceptingOrders: Prisma.FieldRef<"Restaurant", 'Boolean'>
   readonly hours: Prisma.FieldRef<"Restaurant", 'String'>
   readonly deliveryArea: Prisma.FieldRef<"Restaurant", 'String'>
   readonly createdAt: Prisma.FieldRef<"Restaurant", 'DateTime'>
