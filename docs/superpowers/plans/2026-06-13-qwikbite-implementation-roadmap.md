@@ -1,5 +1,8 @@
 # QwikBite — Phase-Wise Implementation Plan (4 modules, full functionality)
 
+> **Build branch:** `Abhi/qwikbite` (created from `main`, 2026-06-13).
+> **Reviewed against the actual code on this branch (2026-06-13).** Files read directly: `prisma/schema.prisma`, `lib/orders/state.ts` + `state.test.ts`, `app/(restaurant)/restaurant/orders/[id]/actions.ts`, `app/(restaurant)/_lib/{queue,format}.ts`, `app/(restaurant)/_components/{order-actions,status-badge}.tsx`, `app/(auth)/actions.ts`, `auth.config.ts`, `app/(admin)/_components/badge.tsx`, `app/(admin)/admin/orders/page.tsx`, `prisma/seed.ts`, `e2e/restaurant.spec.ts`. The foundation is the work already integrated from the earlier slice — reuse it, do not rebuild it. Every Phase 1 "what breaks" claim was verified accurate; review changed **no phase scope** but corrected **one Phase 1 detail**: the seed must include a PAID `PLACED` order (so the rewritten restaurant E2E has something to advance), not only a PAID `READY` order.
+
 ## Context
 
 QwikBite is a four-sided, web-only food-delivery marketplace (Customer / Restaurant / Driver / Admin) built as **one Next.js 16 app with four role-scoped route groups**, one Postgres DB (Prisma), one Auth.js config. It orbits a single order state machine; delivery is **lightweight self-claim** (no GPS/dispatch/surge). Source of truth: `docs/food-delivery/PRD.md` (v2, 4 roles) and the hi-fi mockups in `docs/food-delivery/design/*.html` (35 screens across 4 roles). `docs/food-delivery/WIREFRAMES.md` is **stale** (3-role, no driver, no `READY`) — do not plan from it.
@@ -28,6 +31,18 @@ QwikBite is a four-sided, web-only food-delivery marketplace (Customer / Restaur
 
 **Schema gaps to close:** no `DRIVER` role, no `Driver` model, no `Order.driverId`, no `READY` in `OrderStatus`, no `DriverStatus` enum.
 
+### Integrated models & state — reuse, do NOT recreate (verified in code 2026-06-13)
+
+The earlier slice already integrated these. Build phases extend them; they are never rebuilt.
+
+- **9 Prisma models** (`prisma/schema.prisma`): `User`, `Restaurant`, `MenuCategory`, `MenuItem`, `Address`, `Order`, `OrderItem`, `Payment`, `OrderStatusEvent`. Most relations are `onDelete: Cascade`; `Order→Restaurant` / `Order→customer` are non-cascading.
+- **Enums present:** `Role{CUSTOMER,RESTAURANT,ADMIN}` · `RestaurantStatus{PENDING,APPROVED,SUSPENDED}` · `OrderStatus{PLACED,ACCEPTED,PREPARING,OUT_FOR_DELIVERY,DELIVERED,REJECTED,CANCELLED}` · `PaymentStatus{PENDING,PAID,FAILED}`.
+- **Money fields already exist on `Order`:** `subtotalCents`, `deliveryFeeCents @default(0)`, `totalCents`, `addressLine` (snapshot). The customer/checkout phase **populates** these — it does not add them. `OrderItem` already snapshots `name`+`priceCents`.
+- **State machine already exists** (`lib/orders/state.ts`), exporting `nextStatuses`, `canTransition`, `isTerminal`, `assertTransition(from,to)`, `IllegalTransitionError`. Verified current transition table: `PLACED→[ACCEPTED,REJECTED,CANCELLED]`, `ACCEPTED→[PREPARING]`, `PREPARING→[OUT_FOR_DELIVERY]`, `OUT_FOR_DELIVERY→[DELIVERED]`; terminal `DELIVERED/REJECTED/CANCELLED`. **`assertTransition` has no actor parameter yet** — Phase 1 adds `READY`, the `PREPARING→READY→OUT_FOR_DELIVERY` path, and the actor model.
+- **Reusable building blocks** (mirror their patterns, don't re-author): ownership helper `app/(restaurant)/_lib/restaurant.ts#requireOwnedRestaurant`; SWR polling `app/(restaurant)/_components/queue-board.tsx`; JSON envelope route `app/(restaurant)/restaurant/orders/queue/route.ts`; `formatCents` in `app/(restaurant)/_lib/format.ts` + `app/(admin)/_components/money.ts`; Prisma singleton `@/lib/db`; types from `@/lib/generated/prisma/*`.
+
+> **Net effect on the plan:** because the schema's money fields and the state machine already exist, Phase 1's schema work is purely *additive* (`DRIVER`, `Driver`, `driverId`, `READY`, `DriverStatus`) and Phase 2's checkout *fills* existing columns rather than migrating new ones — exactly as the phases below assume.
+
 ## Decisions (confirmed with user)
 
 1. **Tests: test-as-you-go** ✓ confirmed. Each phase exits only when its core logic has Vitest unit tests + a Playwright happy-path E2E (matches your global rules and the repo's existing pattern).
@@ -50,11 +65,11 @@ QwikBite is a four-sided, web-only food-delivery marketplace (Customer / Restaur
   - Restaurant code: in `app/(restaurant)/restaurant/orders/[id]/actions.ts` **remove** `outForDelivery`/`markDelivered`, **add** `markReady`, pass `"RESTAURANT"` actor to `assertTransition`. Update `_lib/queue.ts` (add a `ready` bucket "Ready · awaiting driver"), `_components/order-actions.tsx`, `_lib/format.ts` (labels), `_components/status-badge.tsx` (READY color), `_components/queue-board.tsx`.
   - Admin: `app/(admin)/_components/badge.tsx` (+READY, +DRIVER tones), `app/(admin)/admin/orders/page.tsx` filter (+Ready).
   - Auth: `app/(auth)/actions.ts` `ROLE_HOME += DRIVER:'/driver'`, signup role enum `+DRIVER` and **create the `Driver` row (PENDING) on driver signup**; `auth.config.ts` add `/driver → role==='DRIVER'`; `signup-form.tsx` add Driver option.
-  - Seed: APPROVED driver (`driver@demo.test`) + one **PAID `READY`** order (with events) so the pool is non-empty for the next phase and tests.
+  - Seed: APPROVED driver (`driver@demo.test`) + **two seeded paid orders**: one **PAID `PLACED`** order (so the rewritten restaurant E2E has something to advance accept→prepare→markReady) and one **PAID `READY`, `driverId:null`** order with its event trail (so the driver pickup pool is non-empty for Phase 3). *Code-review note: the current seed creates NO orders, and `e2e/restaurant.spec.ts` itself documents that it cannot pass without a paid order — so Phase 1 must seed the PLACED order, not rely on checkout (Phase 2).*
 - **Out of scope now:** any driver UI, customer UI, Stripe.
 - **Key files:** `prisma/schema.prisma`, `prisma/migrations/*`, `lib/orders/state.ts` + `state.test.ts`, `app/(restaurant)/restaurant/orders/[id]/actions.ts`, `app/(restaurant)/_lib/queue.ts`, `app/(auth)/actions.ts`, `auth.config.ts`, `prisma/seed.ts`, `e2e/restaurant.spec.ts`.
 - **Entry criteria:** Phase 0 baseline green (`pnpm test`, `pnpm lint`, `pnpm build`).
-- **Exit / acceptance:** migration applies + client regenerates; `state.test.ts` updated (legal `PREPARING→READY`, `READY→OUT_FOR_DELIVERY`; `PREPARING→OUT_FOR_DELIVERY` now illegal) **plus new actor-rejection tests** (restaurant blocked from delivery leg; driver blocked from kitchen leg; admin allowed on all legal edges); `e2e/restaurant.spec.ts` rewritten to stop at READY ("no further actions") and passes; `pnpm build`/`pnpm lint` clean; seed produces a claimable READY order.
+- **Exit / acceptance:** migration applies + client regenerates; `state.test.ts` updated (legal `PREPARING→READY`, `READY→OUT_FOR_DELIVERY`; `PREPARING→OUT_FOR_DELIVERY` now illegal) **plus new actor-rejection tests** (restaurant blocked from delivery leg; driver blocked from kitchen leg; admin allowed on all legal edges); `e2e/restaurant.spec.ts` rewritten to stop at READY ("no further actions") and passes **against the seeded PAID PLACED order**; `pnpm build`/`pnpm lint` clean; seed produces both a PAID PLACED order (for the restaurant E2E) and a claimable PAID READY order (for the driver pool).
 - **Risks:** Postgres enum-in-transaction caveat (mitigation: split migration); forgetting an exhaustive `Record<enum>` map (TS will flag); driver signup must create the `Driver` row (coupled change).
 
 ---
