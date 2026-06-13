@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOwnedRestaurant } from "@/app/(restaurant)/_lib/restaurant";
 import { assertTransition } from "@/lib/orders/state";
@@ -13,7 +14,7 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 //      violations (a restaurant attempting the driver-only delivery leg) throw
 //   4. update status AND append an OrderStatusEvent (byUserId) in one tx
 // The restaurant drives an order only as far as READY; a driver then claims it.
-async function advanceOrder(orderId: string, to: OrderStatus) {
+async function advanceOrder(orderId: string, to: OrderStatus, extra?: { prepMinutes?: number }) {
   const { restaurant, userId } = await requireOwnedRestaurant();
 
   const order = await prisma.order.findUnique({
@@ -28,7 +29,13 @@ async function advanceOrder(orderId: string, to: OrderStatus) {
   assertTransition(from, to, "RESTAURANT");
 
   await prisma.$transaction([
-    prisma.order.update({ where: { id: order.id }, data: { status: to } }),
+    prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: to,
+        ...(extra?.prepMinutes != null ? { prepMinutes: extra.prepMinutes } : {}),
+      },
+    }),
     prisma.orderStatusEvent.create({
       data: { orderId: order.id, from, to, byUserId: userId },
     }),
@@ -38,18 +45,24 @@ async function advanceOrder(orderId: string, to: OrderStatus) {
   revalidatePath("/restaurant");
 }
 
-export async function acceptOrder(orderId: string) {
-  await advanceOrder(orderId, "ACCEPTED");
+// acceptOrder receives a formData from the form (orderId is pre-bound as the
+// first arg; the form action is action.bind(null, orderId)).
+export async function acceptOrder(orderId: string, formData: FormData) {
+  const raw = formData.get("prepMinutes");
+  const prepMinutes = raw
+    ? z.coerce.number().int().min(1).max(120).optional().parse(raw) ?? undefined
+    : undefined;
+  await advanceOrder(orderId, "ACCEPTED", { prepMinutes });
 }
 
-export async function rejectOrder(orderId: string) {
+export async function rejectOrder(orderId: string, _formData: FormData) {
   await advanceOrder(orderId, "REJECTED");
 }
 
-export async function startPreparing(orderId: string) {
+export async function startPreparing(orderId: string, _formData: FormData) {
   await advanceOrder(orderId, "PREPARING");
 }
 
-export async function markReady(orderId: string) {
+export async function markReady(orderId: string, _formData: FormData) {
   await advanceOrder(orderId, "READY");
 }

@@ -33,6 +33,7 @@ export default async function OrderPage({
     select: {
       id: true,
       status: true,
+      prepMinutes: true,
       subtotalCents: true,
       deliveryFeeCents: true,
       totalCents: true,
@@ -63,6 +64,11 @@ export default async function OrderPage({
         <StatusChip status={order.status} label={statusLabel(order.status)} />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{order.restaurant.name}</p>
+      {order.prepMinutes != null && (
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          ~{order.prepMinutes} min prep time
+        </p>
+      )}
 
       {/* Payment pending card — shows both Stripe and dev buttons while PENDING.
           E2E: getByRole("button", { name: "Mark as paid (dev)" }) — text preserved. */}

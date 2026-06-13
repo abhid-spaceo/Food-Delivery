@@ -72,6 +72,7 @@ export default async function OrderDetailPage({
       customer: { select: { name: true, email: true } },
       events: { orderBy: { createdAt: "asc" } },
     },
+    // prepMinutes is included via the default include (all scalar fields)
   });
   if (!order) notFound();
 
@@ -106,6 +107,12 @@ export default async function OrderDetailPage({
                 <Clock className="size-4 shrink-0 text-muted-foreground" />
                 <span>Placed {order.createdAt.toLocaleString()}</span>
               </div>
+              {order.prepMinutes != null && (
+                <div className="flex items-center gap-2">
+                  <Clock className="size-4 shrink-0 text-muted-foreground" />
+                  <span>~{order.prepMinutes} min prep time</span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <CreditCard className="size-4 shrink-0 text-muted-foreground" />
                 <StatusChip status={order.payment?.status ?? "PENDING"} />

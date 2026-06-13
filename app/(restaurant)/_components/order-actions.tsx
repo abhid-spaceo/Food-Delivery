@@ -14,7 +14,11 @@ import {
 // nextStatuses(status) from the state machine (single source of truth). Each
 // button posts to its bound Server Action (no client JS). A terminal order
 // (DELIVERED/REJECTED/CANCELLED) yields no buttons.
-const ACTION_FOR: Record<OrderStatus, ((orderId: string) => Promise<void>) | undefined> = {
+//
+// The ACCEPTED transition also renders an OPTIONAL prep-time input. The button
+// still works with no value (prepMinutes stays null). Existing E2E tests that
+// click "Accept" directly are unaffected — the input has no `required` attribute.
+const ACTION_FOR: Record<OrderStatus, ((orderId: string, formData: FormData) => Promise<void>) | undefined> = {
   ACCEPTED: acceptOrder,
   REJECTED: rejectOrder,
   PREPARING: startPreparing,
@@ -47,7 +51,21 @@ export function OrderActions({ orderId, status }: { orderId: string; status: Ord
       {targets.map((to) => {
         const action = ACTION_FOR[to]!;
         return (
-          <form key={to} action={action.bind(null, orderId)}>
+          <form key={to} action={action.bind(null, orderId)} className="flex items-center gap-2">
+            {/* Optional prep time — only shown on the ACCEPTED transition */}
+            {to === "ACCEPTED" && (
+              <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <input
+                  type="number"
+                  name="prepMinutes"
+                  min={1}
+                  max={120}
+                  placeholder="min"
+                  className="w-16 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                />
+                min (optional)
+              </label>
+            )}
             <Button type="submit" variant={to === "REJECTED" ? "destructive" : "default"}>
               {ACTION_ICON[to]}
               {actionLabel(to)}
