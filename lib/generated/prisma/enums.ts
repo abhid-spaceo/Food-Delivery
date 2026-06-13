@@ -12,6 +12,7 @@
 export const Role = {
   CUSTOMER: 'CUSTOMER',
   RESTAURANT: 'RESTAURANT',
+  DRIVER: 'DRIVER',
   ADMIN: 'ADMIN'
 } as const
 
@@ -27,10 +28,20 @@ export const RestaurantStatus = {
 export type RestaurantStatus = (typeof RestaurantStatus)[keyof typeof RestaurantStatus]
 
 
+export const DriverStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type DriverStatus = (typeof DriverStatus)[keyof typeof DriverStatus]
+
+
 export const OrderStatus = {
   PLACED: 'PLACED',
   ACCEPTED: 'ACCEPTED',
   PREPARING: 'PREPARING',
+  READY: 'READY',
   OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
   DELIVERED: 'DELIVERED',
   REJECTED: 'REJECTED',

@@ -52,6 +52,11 @@ export type User = Prisma.UserModel
  */
 export type Restaurant = Prisma.RestaurantModel
 /**
+ * Model Driver
+ * 
+ */
+export type Driver = Prisma.DriverModel
+/**
  * Model MenuCategory
  * 
  */

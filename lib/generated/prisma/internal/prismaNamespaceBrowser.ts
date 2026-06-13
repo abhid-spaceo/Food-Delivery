@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Restaurant: 'Restaurant',
+  Driver: 'Driver',
   MenuCategory: 'MenuCategory',
   MenuItem: 'MenuItem',
   Address: 'Address',
@@ -106,6 +107,19 @@ export const RestaurantScalarFieldEnum = {
 export type RestaurantScalarFieldEnum = (typeof RestaurantScalarFieldEnum)[keyof typeof RestaurantScalarFieldEnum]
 
 
+export const DriverScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  phone: 'phone',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DriverScalarFieldEnum = (typeof DriverScalarFieldEnum)[keyof typeof DriverScalarFieldEnum]
+
+
 export const MenuCategoryScalarFieldEnum = {
   id: 'id',
   restaurantId: 'restaurantId',
@@ -146,6 +160,7 @@ export const OrderScalarFieldEnum = {
   id: 'id',
   customerId: 'customerId',
   restaurantId: 'restaurantId',
+  driverId: 'driverId',
   status: 'status',
   subtotalCents: 'subtotalCents',
   deliveryFeeCents: 'deliveryFeeCents',

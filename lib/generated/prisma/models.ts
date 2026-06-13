@@ -10,6 +10,7 @@
  */
 export type * from './models/User'
 export type * from './models/Restaurant'
+export type * from './models/Driver'
 export type * from './models/MenuCategory'
 export type * from './models/MenuItem'
 export type * from './models/Address'
