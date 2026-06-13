@@ -5,6 +5,19 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOwnedRestaurant } from "@/app/(restaurant)/_lib/restaurant";
 
+// Toggle accepting-orders state for the caller's own restaurant.
+// Re-checks ownership (second authz layer) before writing.
+export async function toggleAcceptingOrders(formData: FormData) {
+  const { restaurant } = await requireOwnedRestaurant();
+  const next = formData.get("isAcceptingOrders") === "true";
+
+  await prisma.restaurant.update({
+    where: { id: restaurant.id },
+    data: { isAcceptingOrders: next },
+  });
+  revalidatePath("/restaurant/profile");
+}
+
 // Edit the caller's OWN restaurant profile. Resolves the owned restaurant first
 // (second authz layer), then updates by its id. `status` is NOT editable here —
 // approval is an admin-only action (CLAUDE.md visibility rule).

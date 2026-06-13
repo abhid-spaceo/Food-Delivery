@@ -45,7 +45,7 @@ export default async function BrowsePage({
       ...(cuisine ? { cuisine } : {}),
     },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, cuisine: true, deliveryArea: true },
+    select: { id: true, name: true, cuisine: true, deliveryArea: true, isAcceptingOrders: true },
   });
 
   // Distinct cuisines across APPROVED restaurants, for the filter chips.
@@ -159,7 +159,14 @@ export default async function BrowsePage({
                     />
                   </div>
                   <CardContent className="p-4">
-                    <h2 className="font-semibold text-foreground leading-tight">{r.name}</h2>
+                    <div className="flex items-start justify-between gap-2">
+                      <h2 className="font-semibold text-foreground leading-tight">{r.name}</h2>
+                      {!r.isAcceptingOrders && (
+                        <span className="shrink-0 rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                          Closed
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-0.5 text-sm text-muted-foreground">{r.cuisine}</p>
                     {r.deliveryArea ? (
                       <p className="mt-2 text-xs text-muted-foreground truncate">{r.deliveryArea}</p>

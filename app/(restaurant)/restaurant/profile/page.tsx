@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { StatusChip } from "@/components/ui/status-chip";
 import { getOwnedRestaurant } from "@/app/(restaurant)/_lib/restaurant";
 import { DashboardShell } from "@/app/(restaurant)/_components/dashboard-shell";
-import { updateProfile } from "@/app/(restaurant)/restaurant/profile/actions";
+import { updateProfile, toggleAcceptingOrders } from "@/app/(restaurant)/restaurant/profile/actions";
 
 // Restaurant Profile ("/restaurant/profile"). Edit name, cuisine, hours, and
 // delivery area (WIREFRAMES S13). Status is read-only — only an admin can
@@ -37,6 +37,45 @@ export default async function ProfilePage() {
               <strong>Approved</strong> restaurants are shown to customers.
             </CardDescription>
           </CardHeader>
+        </Card>
+
+        {/* Open / closed toggle */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Store status</CardTitle>
+                <CardDescription>
+                  When closed, customers cannot place new orders.
+                </CardDescription>
+              </div>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                  restaurant.isAcceptingOrders
+                    ? "border-[var(--success)] bg-[var(--success-soft)] text-[var(--success)]"
+                    : "border-border bg-secondary text-muted-foreground"
+                }`}
+              >
+                <span
+                  className={`size-2 rounded-full ${restaurant.isAcceptingOrders ? "bg-[var(--success)]" : "bg-muted-foreground"}`}
+                  aria-hidden="true"
+                />
+                {restaurant.isAcceptingOrders ? "Open" : "Closed"}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form action={toggleAcceptingOrders}>
+              <input
+                type="hidden"
+                name="isAcceptingOrders"
+                value={(!restaurant.isAcceptingOrders).toString()}
+              />
+              <Button type="submit" variant="outline">
+                {restaurant.isAcceptingOrders ? "Close store" : "Open store"}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
 
         {/* Editable profile fields */}

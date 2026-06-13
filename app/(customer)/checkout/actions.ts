@@ -46,12 +46,15 @@ export async function placeOrder(
     return { error: "Your cart is empty." };
   }
 
-  // Restaurant must be APPROVED (visibility rule).
+  // Restaurant must be APPROVED (visibility rule) and accepting orders.
   const restaurant = await prisma.restaurant.findFirst({
     where: { id: restaurantId, status: "APPROVED" },
-    select: { id: true },
+    select: { id: true, isAcceptingOrders: true },
   });
   if (!restaurant) return { error: "This restaurant is no longer available." };
+  if (!restaurant.isAcceptingOrders) {
+    return { error: "This restaurant is not accepting orders right now." };
+  }
 
   // Re-read each item from the DB; reject anything missing, unavailable, or not
   // belonging to this restaurant (foreign/cross-restaurant ids match nothing).
